@@ -19,19 +19,19 @@ class BaseController extends Controller
     public function _payment_gateways()
     {
         $gateways = [];
-        
+
         //Check if stripe is configured or not
-        if (env('STRIPE_PUB_KEY') && env('STRIPE_SECRET_KEY')) {
+        if (config('ms.payment_gateway.stripe_pub_key') && config('ms.payment_gateway.stripe_secret_key')) {
             $gateways['stripe'] = 'Stripe';
         }
 
         //Check if paypal is configured or not
-        if ((env('PAYPAL_SANDBOX_API_USERNAME') && env('PAYPAL_SANDBOX_API_PASSWORD')  && env('PAYPAL_SANDBOX_API_SECRET')) || (env('PAYPAL_LIVE_API_USERNAME') && env('PAYPAL_LIVE_API_PASSWORD')  && env('PAYPAL_LIVE_API_SECRET'))) {
+        if ((config('paypal.sandbox.username') && config('paypal.sandbox.password')  && config('paypal.sandbox.secret')) || (config('paypal.live.username') && config('paypal.live.password')  && config('paypal.live.secret'))) {
             $gateways['paypal'] = 'PayPal';
         }
 
         //Check if Razorpay is configured or not
-        if ((env('RAZORPAY_KEY_ID') && env('RAZORPAY_KEY_SECRET'))) {
+        if (config('ms.payment_gateway.razorpay_key_id') && config('ms.payment_gateway.razorpay_key_secret')) {
             $gateways['razorpay'] = 'Razor Pay';
         }
 
@@ -45,19 +45,19 @@ class BaseController extends Controller
         if (in_array($system->country, ['Nigeria', 'Ghana']) && (config('paystack.publicKey') && config('paystack.secretKey'))) {
             $gateways['paystack'] = 'Paystack';
         }
-        
+
         //check if Flutterwave is configured or not
-        if (env('FLUTTERWAVE_PUBLIC_KEY') && env('FLUTTERWAVE_SECRET_KEY') && env('FLUTTERWAVE_ENCRYPTION_KEY')) {
+        if (config('ms.settings.flutterwave_public_key') && config('ms.settings.flutterwave_secret_key') && config('ms.settings.flutterwave_encryption_key')) {
             $gateways['flutterwave'] = 'Flutterwave';
         }
-        
+
         // check if offline payment is enabled or not
         $is_offline_payment_enabled = System::getProperty('enable_offline_payment');
 
         if ($is_offline_payment_enabled) {
             $gateways['offline'] = 'Offline';
         }
-        
+
         return $gateways;
     }
 
@@ -71,11 +71,12 @@ class BaseController extends Controller
             $package = Package::active()->find($package);
         }
 
-        $subscription = ['business_id' => $business_id,
-                        'package_id' => $package->id,
-                        'paid_via' => $gateway,
-                        'payment_transaction_id' => $payment_transaction_id
-                    ];
+        $subscription = [
+            'business_id' => $business_id,
+            'package_id' => $package->id,
+            'paid_via' => $gateway,
+            'payment_transaction_id' => $payment_transaction_id
+        ];
 
         if ($package->price != 0 && (in_array($gateway, ['offline', 'pesapal']) && !$is_superadmin)) {
             //If offline then dates will be decided when approved by superadmin
@@ -91,22 +92,22 @@ class BaseController extends Controller
             $subscription['trial_end_date'] = $dates['trial'];
             $subscription['status'] = 'approved';
         }
-        
+
         $subscription['package_price'] = $package->price;
         $subscription['package_details'] = [
-                'location_count' => $package->location_count,
-                'user_count' => $package->user_count,
-                'product_count' => $package->product_count,
-                'invoice_count' => $package->invoice_count,
-                'name' => $package->name
-            ];
+            'location_count' => $package->location_count,
+            'user_count' => $package->user_count,
+            'product_count' => $package->product_count,
+            'invoice_count' => $package->invoice_count,
+            'name' => $package->name
+        ];
         //Custom permissions.
         if (!empty($package->custom_permissions)) {
             foreach ($package->custom_permissions as $name => $value) {
                 $subscription['package_details'][$name] = $value;
             }
         }
-        
+
         $subscription['created_id'] = $user_id;
         $subscription = Subscription::create($subscription);
 
@@ -116,7 +117,7 @@ class BaseController extends Controller
 
             if (!empty($email) && $is_notif_enabled == 1) {
                 Notification::route('mail', $email)
-                ->notify(new NewSubscriptionNotification($subscription));
+                    ->notify(new NewSubscriptionNotification($subscription));
             }
         }
 
@@ -147,7 +148,7 @@ class BaseController extends Controller
         } elseif ($package->interval == 'years') {
             $output['end'] = $start_date->addYears($package->interval_count)->toDateString();
         }
-        
+
         $output['trial'] = $start_date->addDays($package->trial_days);
 
         return $output;

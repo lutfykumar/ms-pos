@@ -1484,7 +1484,7 @@ class Util
     public function getLocationFromCoordinates($lat, $long)
     {
         try {
-            $access_token = env('GOOGLE_MAP_API_KEY');
+            $access_token = config('ms.settings.google_map_api');
             $full_address = null;
             $address = [];
             if (!empty($access_token)) {
@@ -1613,7 +1613,7 @@ class Util
                 }
             }
         }
-        
+
         //Create the user
         $user = User::create($user_details);
 

@@ -444,7 +444,7 @@ class SubscriptionController extends BaseController
     protected function pay_razorpay($business_id, $business_name, $package, $request)
     {
         $razorpay_payment_id = $request->razorpay_payment_id;
-        $razorpay_api = new Api(env('RAZORPAY_KEY_ID'), env('RAZORPAY_KEY_SECRET'));
+        $razorpay_api = new Api(config('ms.payment_gateway.razorpay_key_id'), config('ms.payment_gateway.razorpay_key_secret'));
 
         $payment = $razorpay_api->payment->fetch($razorpay_payment_id)->capture(['amount' => $package->price * 100]); // Captures a payment
 

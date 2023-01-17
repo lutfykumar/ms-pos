@@ -1,29 +1,32 @@
 @extends('layouts.home')
-@section('title', config('app.name', 'ultimatePOS'))
+@section('title', config('app.name'))
 
 @section('content')
     <style type="text/css">
         .flex-center {
-                align-items: center;
-                display: flex;
-                justify-content: center;
-                margin-top: 10%;
-            }
+            align-items: center;
+            display: flex;
+            justify-content: center;
+            margin-top: 10%;
+        }
+
         .title {
-                font-size: 84px;
-            }
+            font-size: 84px;
+        }
+
         .tagline {
-                font-size:25px;
-                font-weight: 300;
-                text-align: center;
-            }
+            font-size: 25px;
+            font-weight: 300;
+            text-align: center;
+        }
 
         @media only screen and (max-width: 600px) {
-            .title{
+            .title {
                 font-size: 38px;
             }
+
             .tagline {
-                font-size:18px;
+                font-size: 18px;
             }
         }
     </style>
@@ -34,4 +37,3 @@
         {{ env('APP_TITLE', '') }}
     </p>
 @endsection
-            

@@ -4,12 +4,12 @@ return [
     /*
      * Pesapal consumer key
      */
-    'consumer_key'    => env('PESAPAL_CONSUMER_KEY'),
+    'consumer_key'    => env('PESAPAL_CONSUMER_KEY', ''),
 
     /*
      * Pesapal consumer secret
      */
-    'consumer_secret' => env('PESAPAL_CONSUMER_SECRET'),
+    'consumer_secret' => env('PESAPAL_CONSUMER_SECRET', ''),
 
     /*
      * ISO code for the currency

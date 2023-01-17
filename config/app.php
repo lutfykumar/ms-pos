@@ -12,7 +12,8 @@ return [
     | any other location as required by the application or its packages.
     */
 
-    'name' => env('APP_NAME', 'ultimatePOS'),
+    'name' => env('APP_NAME', 'Mojo Solutions'),
+    'title' => env('APP_TITLE', 'Best POS'),
 
     /*
     |--------------------------------------------------------------------------
@@ -25,7 +26,7 @@ return [
     |
     */
 
-    'env' => env('APP_ENV', 'production'),
+    'env' => env('APP_ENV', 'local'),
 
     /*
     |--------------------------------------------------------------------------
@@ -51,7 +52,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'https://ultimate-pos.dev'),
 
     /*
     |--------------------------------------------------------------------------
@@ -64,7 +65,7 @@ return [
     |
     */
 
-    'timezone' => env('APP_TIMEZONE', 'Europe/London'),
+    'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
 
     /*
     |--------------------------------------------------------------------------
@@ -77,7 +78,7 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    'locale' => env('APP_LOCALE', 'id'),
 
     /*
     |--------------------------------------------------------------------------
@@ -102,7 +103,7 @@ return [
     | localized telephone numbers, street address information and more.
     |
     */
-    'faker_locale' => 'en_US',
+    'faker_locale' => 'id_ID',
 
     /*
     |--------------------------------------------------------------------------
@@ -115,10 +116,10 @@ return [
     |
     */
 
-    'key' => env('APP_KEY', 'base64:W8UqtE9LHZW+gRag78o4BCbN1M0w4HdaIFdLqHJ/9PA='),
+    'key' => env('APP_KEY', 'base64:B8AWP4My9czDHOeIy4eRBbxU+cATO7Mw16OPVtO9L7k='),
 
     'cipher' => 'AES-256-CBC',
-    
+
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
