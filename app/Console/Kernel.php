@@ -30,12 +30,11 @@ class Kernel extends ConsoleKernel
         $email = config('mail.username');
 
         $mnow = date('Y-m-d H:i:s');
+        $schedule->call(function () use ($mnow) {
+            Artisan::call('queue:work --stop-when-empty');
+            Log::info('Cronjob berhasil dijalankan pada waktu : ' . $mnow . ' dari schedule.');
+        })->everyTenMinutes();
         if ($env === 'production') {
-            $schedule->call(function () use ($mnow) {
-                Artisan::call('queue:work --stop-when-empty');
-                Log::info('Cronjob berhasil dijalankan pada waktu : ' . $mnow . ' dari schedule.');
-            })->everyTenMinutes();
-
             //Scheduling backup, specify the time when the backup will get cleaned & time when it will run.
             $schedule->command('backup:run')->dailyAt('23:50');
 
