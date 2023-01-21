@@ -65,7 +65,7 @@ return [
              * The disk names on which the backups will be stored.
              */
             'disks' => [
-                env('BACKUP_DISK', 'dropbox'),
+                env('BACKUP_DISK', 'local'),
             ],
         ],
     ],
@@ -121,7 +121,7 @@ return [
     'monitorBackups' => [
         [
             'name' => config('app.name'),
-            'disks' => [env('BACKUP_DISK', 'dropbox'),],
+            'disks' => [env('BACKUP_DISK', 'local'),],
             'newestBackupsShouldNotBeOlderThanDays' => 1,
             'storageUsedMayNotBeHigherThanMegabytes' => 5000,
         ],
