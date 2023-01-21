@@ -22,3 +22,5 @@ npm-debug.log
 /public/images/
 /public/modules/
 /public/mix-manifest.json
+error_log
+public/error_log
