@@ -143,19 +143,16 @@
         });
     });
 
-    function queue_work(table = '') {
+    function queue_work() {
         $.ajax({
-            url: ip_server + "/ajax/queue-work",
+            url: base_path + "/ajax/queue-work",
             type: "GET",
             dataType: "json",
             success: function(res) {
                 if (res.status == true) {
-                    if (table !== '') {
-                        table.DataTable().ajax.reload();
-                    }
-                    toastr.success('Import Background Proses Success');
+                    console.log('Queue Background Proses Success');
                 } else {
-                    toastr.error('Import Background Proses Failed');
+                    console.log('Queue Background Proses Failed');
                 }
             }
         });

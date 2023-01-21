@@ -16,7 +16,7 @@
             <div class="panel panel-default">
                 <div class="panel-heading"><i class="fa fa-fw fa-flag"></i> Levels</div>
                 <ul class="list-group">
-                    @foreach($log->menu() as $levelKey => $item)
+                    @foreach ($log->menu() as $levelKey => $item)
                         @if ($item['count'] === 0)
                             <a href="#" class="list-group-item disabled">
                                 <span class="badge">
@@ -88,9 +88,10 @@
                     <form action="{{ route('log-viewer::logs.search', [$log->date, $level]) }}" method="GET">
                         <div class=form-group">
                             <div class="input-group">
-                                <input id="query" name="query" class="form-control"  value="{!! $query !!}" placeholder="Type here to search">
+                                <input id="query" name="query" class="form-control" value="{!! $query !!}"
+                                    placeholder="Type here to search">
                                 <span class="input-group-btn">
-                                    @unless (is_null($query))
+                                    @unless(is_null($query))
                                         <a href="{{ route('log-viewer::logs.show', [$log->date]) }}" class="btn btn-default">
                                             ({{ $entries->count() }} results) <span class="glyphicon glyphicon-remove"></span>
                                         </a>
@@ -148,7 +149,9 @@
                                     </td>
                                     <td class="text-right">
                                         @if ($entry->hasStack())
-                                            <a class="btn btn-xs btn-default" role="button" data-toggle="collapse" href="#log-stack-{{ $key }}" aria-expanded="false" aria-controls="log-stack-{{ $key }}">
+                                            <a class="btn btn-xs btn-default" role="button" data-toggle="collapse"
+                                                href="#log-stack-{{ $key }}" aria-expanded="false"
+                                                aria-controls="log-stack-{{ $key }}">
                                                 <i class="fa fa-toggle-on"></i> Stack
                                             </a>
                                         @endif
@@ -166,7 +169,8 @@
                             @empty
                                 <tr>
                                     <td colspan="5" class="text-center">
-                                        <span class="label label-default">{{ trans('log-viewer::general.empty-logs') }}</span>
+                                        <span
+                                            class="label label-default">{{ trans('log-viewer::general.empty-logs') }}</span>
                                     </td>
                                 </tr>
                             @endforelse
@@ -204,11 +208,14 @@
                         <h4 class="modal-title">DELETE LOG FILE</h4>
                     </div>
                     <div class="modal-body">
-                        <p>Are you sure you want to <span class="label label-danger">DELETE</span> this log file <span class="label label-primary">{{ $log->date }}</span> ?</p>
+                        <p>Are you sure you want to <span class="label label-danger">DELETE</span> this log file <span
+                                class="label label-primary">{{ $log->date }}</span> ?</p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-sm btn-default pull-left" data-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-sm btn-danger" data-loading-text="Loading&hellip;">DELETE FILE</button>
+                        <button type="button" class="btn btn-sm btn-default pull-left"
+                            data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-sm btn-danger" data-loading-text="Loading&hellip;">DELETE
+                            FILE</button>
                     </div>
                 </div>
             </form>
@@ -218,27 +225,26 @@
 
 @section('scripts')
     <script>
-        $(function () {
+        $(function() {
             var deleteLogModal = $('div#delete-log-modal'),
-                deleteLogForm  = $('form#delete-log-form'),
-                submitBtn      = deleteLogForm.find('button[type=submit]');
+                deleteLogForm = $('form#delete-log-form'),
+                submitBtn = deleteLogForm.find('button[type=submit]');
 
             deleteLogForm.on('submit', function(event) {
                 event.preventDefault();
                 submitBtn.button('loading');
 
                 $.ajax({
-                    url:      $(this).attr('action'),
-                    type:     $(this).attr('method'),
+                    url: $(this).attr('action'),
+                    type: $(this).attr('method'),
                     dataType: 'json',
-                    data:     $(this).serialize(),
+                    data: $(this).serialize(),
                     success: function(data) {
                         submitBtn.button('reset');
                         if (data.result === 'success') {
                             deleteLogModal.modal('hide');
                             location.replace("{{ route('log-viewer::logs.list') }}");
-                        }
-                        else {
+                        } else {
                             alert('OOPS ! This is a lack of coffee exception !')
                         }
                     },
@@ -252,14 +258,14 @@
                 return false;
             });
 
-            @unless (empty(log_styler()->toHighlight()))
-            $('.stack-content').each(function() {
-                var $this = $(this);
-                var html = $this.html().trim()
-                    .replace(/({!! join(log_styler()->toHighlight(), '|') !!})/gm, '<strong>$1</strong>');
+            @unless(empty(log_styler()->toHighlight()))
+                $('.stack-content').each(function() {
+                    var $this = $(this);
+                    var html = $this.html().trim()
+                        .replace(/({!! join('|', log_styler()->toHighlight()) !!})/gm, '<strong>$1</strong>');
 
-                $this.html(html);
-            });
+                    $this.html(html);
+                });
             @endunless
         });
     </script>

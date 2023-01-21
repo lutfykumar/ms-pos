@@ -13,7 +13,7 @@ return [
          * The name of this application. You can use this name to monitor
          * the backups.
          */
-        'name' => 'UltimatePOS',
+        'name' => 'MS-POS',
 
         'source' => [
 
@@ -121,7 +121,7 @@ return [
     'monitorBackups' => [
         [
             'name' => config('app.name'),
-            'disks' => [env('BACKUP_DISK', 'local'),],
+            'disks' => [env('BACKUP_DISK', 'dropbox'),],
             'newestBackupsShouldNotBeOlderThanDays' => 1,
             'storageUsedMayNotBeHigherThanMegabytes' => 5000,
         ],

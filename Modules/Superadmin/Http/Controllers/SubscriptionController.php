@@ -169,7 +169,6 @@ class SubscriptionController extends BaseController
                 ->action('\Modules\Superadmin\Http\Controllers\SubscriptionController@index')
                 ->with('status', $output);
         }
-        $this->queueRun();
     }
 
     /**
@@ -237,7 +236,6 @@ class SubscriptionController extends BaseController
             exit;
             $output = ['success' => 0, 'msg' => $e->getMessage()];
         }
-        $this->queueRun();
         return redirect()
             ->action('\Modules\Superadmin\Http\Controllers\SubscriptionController@index')
             ->with('status', $output);

@@ -65,7 +65,7 @@ return [
 
         'dropbox' => [
             'driver' => 'dropbox',
-            'authorizationToken' => env('DROPBOX_ACCESS_TOKEN', 'sl.BW6_wcnMey7zK6wb-0kc6BvorMqzPlAh4HAK7HE4itTHFuNYpW2FHQpCCAWwCa24sBXc8e1st6kpRrbNfi0qhvT8ghbQl_t9ukSwiefQBQm1V7Of103WSv5XSMvg6hGX-CM-fV4')
+            'authorizationToken' => env('DROPBOX_ACCESS_TOKEN', 'sl.BXTTaEg-TdmOgwe3eZzydZz08A1PKi2060IKK2qMxMctYOu0UgAd9ND72UcBU_FuqiTZqwnmRDrCtazrXYxbRX4-bPkwp82zJyE7uFQZ09YG6Si0rKbzzRBjn2F0stADCrfQ8YWeNmLD')
         ],
 
     ],

@@ -2,6 +2,8 @@
 
 namespace App\Console;
 
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -27,7 +29,13 @@ class Kernel extends ConsoleKernel
         $env = config('app.env');
         $email = config('mail.username');
 
-        if ($env === 'live') {
+        $mnow = date('Y-m-d H:i:s');
+        if ($env === 'production') {
+            $schedule->call(function () use ($mnow) {
+                Artisan::call('queue:work --stop-when-empty');
+                Log::info('Cronjob berhasil dijalankan pada waktu : ' . $mnow . ' dari schedule.');
+            })->everyTenMinutes();
+
             //Scheduling backup, specify the time when the backup will get cleaned & time when it will run.
             $schedule->command('backup:run')->dailyAt('23:50');
 

@@ -37,6 +37,7 @@
         }
     </style>
     @yield('css')
+    @stack('css')
 </head>
 
 <body
@@ -135,6 +136,7 @@
             @includeIf($additional_view)
         @endforeach
     @endif
+    @stack('js')
 </body>
 
 </html>

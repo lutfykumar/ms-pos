@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Log;
+use App\Utils\Util;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
-use Storage;
-use Log;
 
-use App\Utils\Util;
+use Illuminate\Support\Facades\Storage;
 
 class BackUpController extends Controller
 {
@@ -84,14 +84,16 @@ class BackUpController extends Controller
 
             // log the results
             Log::info("Backpack\BackupManager -- new backup started from admin interface \r\n" . $output);
-            
-            $output = ['success' => 1,
-                        'msg' => __('lang_v1.success')
-                    ];
+
+            $output = [
+                'success' => 1,
+                'msg' => __('lang_v1.success')
+            ];
         } catch (Exception $e) {
-            $output = ['success' => 0,
-                        'msg' => $e->getMessage()
-                    ];
+            $output = [
+                'success' => 0,
+                'msg' => $e->getMessage()
+            ];
         }
 
         return back()->with('status', $output);
@@ -110,9 +112,10 @@ class BackUpController extends Controller
 
         //Disable in demo
         if (config('app.env') == 'demo') {
-            $output = ['success' => 0,
-                            'msg' => 'Feature disabled in demo!!'
-                        ];
+            $output = [
+                'success' => 0,
+                'msg' => 'Feature disabled in demo!!'
+            ];
             return back()->with('status', $output);
         }
 
@@ -144,9 +147,10 @@ class BackUpController extends Controller
 
         //Disable in demo
         if (config('app.env') == 'demo') {
-            $output = ['success' => 0,
-                            'msg' => 'Feature disabled in demo!!'
-                        ];
+            $output = [
+                'success' => 0,
+                'msg' => 'Feature disabled in demo!!'
+            ];
             return back()->with('status', $output);
         }
 

@@ -132,7 +132,7 @@ class PageController extends Controller
         try {
             $input = $request->only(['title', 'slug', 'content', 'menu_order']);
 
-            $input['slug'] = str_slug($input['slug']);
+            $input['slug'] = Str::slug($input['slug']);
             $input['is_shown'] = empty($request->input('is_shown')) ? 0 : 1;
 
             $input['menu_order'] = empty($input['menu_order']) ? 0 : $input['menu_order'];

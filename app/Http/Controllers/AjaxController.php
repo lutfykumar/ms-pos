@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Artisan;
 
-class AccountController extends Controller
+class AjaxController extends Controller
 {
   public function queue()
   {
