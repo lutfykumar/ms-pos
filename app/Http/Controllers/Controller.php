@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Foundation\Bus\DispatchesJobs;
-use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class Controller extends BaseController
 {
@@ -52,7 +54,7 @@ class Controller extends BaseController
     public function respondWentWrong($exception = null)
     {
         //If debug is enabled then send exception message
-        $message = (config('app.debug') && is_object($exception)) ? "File:" . $exception->getFile(). "Line:" . $exception->getLine(). "Message:" . $exception->getMessage() : __('messages.something_went_wrong');
+        $message = (config('app.debug') && is_object($exception)) ? "File:" . $exception->getFile() . "Line:" . $exception->getLine() . "Message:" . $exception->getMessage() : __('messages.something_went_wrong');
 
         //TODO: show exception error message when error is enabled.
         return $this->setStatusCode(200)
@@ -92,9 +94,11 @@ class Controller extends BaseController
      * Returns new mpdf instance
      *
      */
-    public function getMpdf() {
-        $mpdf = new \Mpdf\Mpdf(['tempDir' => public_path('uploads/temp'), 
-            'mode' => 'utf-8', 
+    public function getMpdf()
+    {
+        $mpdf = new \Mpdf\Mpdf([
+            'tempDir' => public_path('uploads/temp'),
+            'mode' => 'utf-8',
             'autoScriptToLang' => true,
             'autoLangToFont' => true,
             'autoVietnamese' => true,
@@ -107,5 +111,17 @@ class Controller extends BaseController
         }
 
         return $mpdf;
+    }
+
+    public function queueRun()
+    {
+        try {
+            $mnow = date('Y-m-d H:i:s');
+            Artisan::call('queue:work --stop-when-empty');
+            Log::info('queue berhasil dijalankan pada waktu : ' . $mnow . ' dari controller.');
+        } catch (\Throwable $th) {
+            Log::info('queue gagal dijalankan pada waktu : ' . $mnow . ' dari controller. karena : ' . $th);
+        }
+        return true;
     }
 }
