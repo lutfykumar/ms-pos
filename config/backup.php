@@ -4,7 +4,7 @@ $include = [public_path('uploads'), base_path('.env')];
 if (file_exists(base_path('custom_views'))) {
     $include[] = base_path('custom_views');
 }
-    
+
 return [
 
     'backup' => [
@@ -65,7 +65,7 @@ return [
              * The disk names on which the backups will be stored.
              */
             'disks' => [
-                env('BACKUP_DISK', 'local'),
+                env('BACKUP_DISK', 'dropbox'),
             ],
         ],
     ],

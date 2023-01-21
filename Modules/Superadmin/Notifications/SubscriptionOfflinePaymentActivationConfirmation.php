@@ -3,23 +3,27 @@
 namespace Modules\Superadmin\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 
-class SubscriptionOfflinePaymentActivationConfirmation extends Notification
+class SubscriptionOfflinePaymentActivationConfirmation extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    public $business;
+    public $package;
+    public $price;
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($business, $package, $ownerName)
+    public function __construct($business, $package, $price)
     {
         $this->business = $business;
         $this->package = $package;
-        $this->ownerName = $ownerName;
+        $this->price = $price;
     }
 
     /**
@@ -41,8 +45,9 @@ class SubscriptionOfflinePaymentActivationConfirmation extends Notification
      */
     public function toMail($notifiable)
     {
-        $hello = 'Dear ' . $this->ownerName . ',';
-        $details = 'Bisnis : ' . $this->business->name . ', Paket : ' . $this->package->name . ', Harga : ' . $this->package->price;
+        // $ownerName = $this->business->owner->surname . ' ' . $this->business->owner->first_name . ' ' . $this->business->owner->last_name;
+        $hello = 'Dear Admin,';
+        $details = 'Bisnis : ' . $this->business->name . '<br> Paket : ' . $this->package->name . ' <br>Harga : ' . $this->price;
 
         return (new MailMessage)
             ->greeting($hello)

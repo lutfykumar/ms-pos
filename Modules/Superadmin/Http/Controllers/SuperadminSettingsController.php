@@ -7,6 +7,7 @@ use App\Utils\BusinessUtil;
 use Illuminate\Http\Request;
 
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 
 class SuperadminSettingsController extends BaseController
 {
@@ -213,7 +214,7 @@ class SuperadminSettingsController extends BaseController
                 $output = ['success' => 0, 'msg' => 'Some setting could not be saved, make sure .env file has 644 permission & owned by www-data user'];
             }
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
                 'success' => 0,

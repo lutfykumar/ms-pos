@@ -2,33 +2,34 @@
 
 namespace Modules\Superadmin\Http\Controllers;
 
-use \Notification;
-use App\Business;
 use App\System;
+
+use App\Business;
+use Stripe\Charge;
+use Stripe\Stripe;
+use Stripe\Customer;
+
+use Razorpay\Api\Api;
 use App\Utils\ModuleUtil;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+
+use Illuminate\Support\Facades\Log;
 use Modules\Superadmin\Entities\Package;
-
-use Modules\Superadmin\Entities\Subscription;
-use Modules\Superadmin\Notifications\SubscriptionOfflinePaymentActivationConfirmation;
-
-use Pesapal;
-use Razorpay\Api\Api;
-use Srmklive\PayPal\Services\ExpressCheckout;
-use Stripe\Charge;
-
-use Stripe\Customer;
-use Stripe\Stripe;
-use Paystack;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Notification;
+use Modules\Superadmin\Entities\Subscription;
+use Srmklive\PayPal\Services\ExpressCheckout;
+use Unicodeveloper\Paystack\Facades\Paystack;
+use Modules\Superadmin\Notifications\SubscriptionOfflinePaymentActivationConfirmation;
 
 class SubscriptionController extends BaseController
 {
     protected $provider;
-
+    protected $moduleUtil;
     public function __construct(ModuleUtil $moduleUtil = null)
     {
         if (!defined('CURL_SSLVERSION_TLSv1_2')) {
@@ -160,7 +161,7 @@ class SubscriptionController extends BaseController
         } catch (\Exception $e) {
             DB::rollBack();
 
-            \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = ['success' => 0, 'msg' => "File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage()];
 
@@ -190,7 +191,6 @@ class SubscriptionController extends BaseController
         }
 
         try {
-
             //Disable in demo
             if (config('app.env') == 'demo') {
                 $output = [
@@ -231,7 +231,7 @@ class SubscriptionController extends BaseController
         } catch (\Exception $e) {
             DB::rollBack();
 
-            \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
             echo "File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage();
             exit;
             $output = ['success' => 0, 'msg' => $e->getMessage()];
@@ -306,7 +306,6 @@ class SubscriptionController extends BaseController
      */
     protected function pay_offline($business_id, $business_name, $package, $request)
     {
-
         //Disable in demo
         if (config('app.env') == 'demo') {
             $output = [
@@ -315,20 +314,16 @@ class SubscriptionController extends BaseController
             ];
             return back()->with('status', $output);
         }
-
         //Send notification
         $email = System::getProperty('email');
         $business = Business::find($business_id);
-        $ownerName = $business->owner->surname . ' ' . $business->owner->first_name . ' ' . $business->owner->last_name;
-
-        if (!$this->moduleUtil->IsMailConfigured()) {
+        if ($this->moduleUtil->IsMailConfigured()) {
             return null;
         }
         $system_currency = System::getCurrency();
-        $package->price = $system_currency->symbol . ' ' . number_format($package->price, 2, $system_currency->decimal_separator, $system_currency->thousand_separator);
-
+        $price = $system_currency->symbol . ' ' . number_format($package->price, 2, $system_currency->decimal_separator, $system_currency->thousand_separator);
         Notification::route('mail', $email)
-            ->notify(new SubscriptionOfflinePaymentActivationConfirmation($business, $package, $ownerName));
+            ->notify(new SubscriptionOfflinePaymentActivationConfirmation($business, $package, $price));
 
         return null;
     }
@@ -411,7 +406,7 @@ class SubscriptionController extends BaseController
                 'qty' => 1
             ]
         ];
-        $data['invoice_id'] = str_random(5);
+        $data['invoice_id'] = Str::random(5);
         $data['invoice_description'] = "Order #{$data['invoice_id']} Invoice";
         $data['return_url'] = action('\Modules\Superadmin\Http\Controllers\SubscriptionController@confirm', [$package_id]) . '?gateway=paypal';
         $data['cancel_url'] = action('\Modules\Superadmin\Http\Controllers\SubscriptionController@pay', [$package_id]);

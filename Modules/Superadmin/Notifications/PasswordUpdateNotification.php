@@ -3,10 +3,11 @@
 namespace Modules\Superadmin\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 
-class PasswordUpdateNotification extends Notification
+class PasswordUpdateNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -42,11 +43,11 @@ class PasswordUpdateNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->subject(__('superadmin::lang.password_updated'))
-                    ->greeting(__('restaurant.hello_name', ['name' =>  $notifiable->first_name]))
-                    ->line(__('superadmin::lang.your_password_updated_successfully'))
-                    ->line(__('superadmin::lang.your_new_password_is', ['password' => $this->password]))
-                    ->action(__('lang_v1.login'), route('login'));
+            ->subject(__('superadmin::lang.password_updated'))
+            ->greeting(__('restaurant.hello_name', ['name' =>  $notifiable->first_name]))
+            ->line(__('superadmin::lang.your_password_updated_successfully'))
+            ->line(__('superadmin::lang.your_new_password_is', ['password' => $this->password]))
+            ->action(__('lang_v1.login'), route('login'));
     }
 
     /**

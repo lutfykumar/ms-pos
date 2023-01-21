@@ -3,9 +3,11 @@
 namespace Modules\Superadmin\Http\Controllers;
 
 use App\Utils\ModuleUtil;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Modules\Superadmin\Entities\SuperadminFrontendPage;
 
 class PageController extends Controller
@@ -66,7 +68,7 @@ class PageController extends Controller
         try {
             $input = $request->only(['title', 'slug', 'content', 'menu_order']);
 
-            $input['slug'] = str_slug($input['slug']);
+            $input['slug'] = Str::slug($input['slug']);
             $input['is_shown'] = empty($request->input('is_shown')) ? 0 : 1;
             $input['menu_order'] = empty($input['menu_order']) ? 0 : $input['menu_order'];
 
@@ -78,11 +80,12 @@ class PageController extends Controller
                 $output = ['success' => 0, 'msg' => __('superadmin::lang.slug_already_exists')];
             }
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => 0,
-                            'msg' => __('messages.something_went_wrong')
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => 0,
+                'msg' => __('messages.something_went_wrong')
+            ];
         }
 
         return redirect()
@@ -134,8 +137,8 @@ class PageController extends Controller
 
             $input['menu_order'] = empty($input['menu_order']) ? 0 : $input['menu_order'];
             $is_slug_exists = SuperadminFrontendPage::where('id', '!=', $id)
-                                    ->where('slug', $input['slug'])
-                                    ->exists();
+                ->where('slug', $input['slug'])
+                ->exists();
 
             if (!$is_slug_exists) {
                 SuperadminFrontendPage::where('id', $id)->update($input);
@@ -144,11 +147,12 @@ class PageController extends Controller
                 $output = ['success' => 0, 'msg' => __('superadmin::lang.slug_already_exists')];
             }
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => 0,
-                            'msg' => __('messages.something_went_wrong')
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => 0,
+                'msg' => __('messages.something_went_wrong')
+            ];
         }
 
         return redirect()
@@ -169,14 +173,15 @@ class PageController extends Controller
         try {
             SuperadminFrontendPage::where('id', $id)
                 ->delete();
-            
+
             $output = ['success' => 1, 'msg' => __('lang_v1.success')];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => 0,
-                            'msg' => __('messages.something_went_wrong')
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => 0,
+                'msg' => __('messages.something_went_wrong')
+            ];
         }
 
         return $output;

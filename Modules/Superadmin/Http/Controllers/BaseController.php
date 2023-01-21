@@ -2,12 +2,12 @@
 
 namespace Modules\Superadmin\Http\Controllers;
 
-use \Notification;
 use App\System;
 use Illuminate\Routing\Controller;
+use Modules\Superadmin\Entities\Package;
+use Illuminate\Support\Facades\Notification;
 use Modules\Superadmin\Entities\Subscription;
 use Modules\Superadmin\Notifications\NewSubscriptionNotification;
-use Modules\Superadmin\Entities\Package;
 
 class BaseController extends Controller
 {

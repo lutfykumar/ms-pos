@@ -40,10 +40,10 @@ class Kernel extends ConsoleKernel
 
         if ($env === 'demo' && !empty($email)) {
             //IMPORTANT NOTE: This command will delete all business details and create dummy business, run only in demo server.
-            $schedule->command('pos:dummyBusiness')
-                    ->cron('0 */3 * * *')
-                    //->everyThirtyMinutes()
-                    ->emailOutputTo($email);
+            // $schedule->command('pos:dummyBusiness')
+            //         ->cron('0 */3 * * *')
+            //         //->everyThirtyMinutes()
+            //         ->emailOutputTo($email);
         }
     }
 
@@ -54,7 +54,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
         require base_path('routes/console.php');
     }
 }

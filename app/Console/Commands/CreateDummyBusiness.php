@@ -42,11 +42,11 @@ class CreateDummyBusiness extends Command
      */
     public function handle()
     {
-        
-        
+
+
         ini_set('max_execution_time', 0);
         ini_set('memory_limit', '512M');
-        
+
         DB::beginTransaction();
 
         DB::statement("SET FOREIGN_KEY_CHECKS = 0");
@@ -63,13 +63,13 @@ class CreateDummyBusiness extends Command
 
         //Run the purchase & mapping command
         //Artisan::call('pos:mapPurchaseSell');
-        
+
         //Call modules dummy
         $moduleUtil = new ModuleUtil();
         $moduleUtil->getModuleData('dummy_data');
-        
+
         //if (config('app.env') == 'demo') {
-          //  system('chmod 777 -R /var/www/pos/storage');
+        //  system('chmod 777 -R /var/www/pos/storage');
         //}
 
         DB::commit();

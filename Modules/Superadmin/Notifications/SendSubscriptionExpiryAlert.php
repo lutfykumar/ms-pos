@@ -2,13 +2,14 @@
 
 namespace Modules\Superadmin\Notifications;
 
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class SendSubscriptionExpiryAlert extends Notification
+class SendSubscriptionExpiryAlert extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -23,7 +24,7 @@ class SendSubscriptionExpiryAlert extends Notification
     public function __construct($subscription)
     {
         $this->subscription = $subscription;
-        $this->days_left = \Carbon::now()->diffInDays($this->subscription->end_date) + 1;
+        $this->days_left = Carbon::now()->diffInDays($this->subscription->end_date) + 1;
     }
 
     /**
@@ -38,7 +39,7 @@ class SendSubscriptionExpiryAlert extends Notification
         if (isPusherEnabled()) {
             $channels[] = 'broadcast';
         }
-        
+
         return $channels;
     }
 
@@ -55,11 +56,11 @@ class SendSubscriptionExpiryAlert extends Notification
         $business_name = $this->subscription->business->name;
         $days_left = $this->days_left;
         return (new MailMessage)
-                ->greeting("Dear $owner_name,")
-                ->subject('Subscription Expiry Alert')
-                ->line("Your subscription for $app_name is expiring in next $days_left days.")
-                ->line("Kindly subscribe to continue using $business_name.")
-                ->action('Subscribe', action('\Modules\Superadmin\Http\Controllers\SubscriptionController@index'));
+            ->greeting("Dear $owner_name,")
+            ->subject('Subscription Expiry Alert')
+            ->line("Your subscription for $app_name is expiring in next $days_left days.")
+            ->line("Kindly subscribe to continue using $business_name.")
+            ->action('Subscribe', action('\Modules\Superadmin\Http\Controllers\SubscriptionController@index'));
     }
 
     /**
@@ -85,7 +86,7 @@ class SendSubscriptionExpiryAlert extends Notification
     {
         return new BroadcastMessage([
             'title' => '',
-            'body' => strip_tags( __('superadmin::lang.subscription_expiry_alert', ['days_left' => $this->days_left, 'app_name' => config('app.name')]) ),
+            'body' => strip_tags(__('superadmin::lang.subscription_expiry_alert', ['days_left' => $this->days_left, 'app_name' => config('app.name')])),
             'link' => action('\Modules\Superadmin\Http\Controllers\SubscriptionController@index')
         ]);
     }

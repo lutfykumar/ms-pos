@@ -2,16 +2,16 @@
 
 namespace Modules\Superadmin\Http\Controllers;
 
-use Modules\Superadmin\Entities\Subscription;
-use App\Business;
-use App\System;
-use \Carbon;
 use Charts;
-use Illuminate\Support\Facades\DB;
+use App\System;
+use App\Business;
+use Carbon\Carbon;
+use App\Charts\CommonChart;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
-use App\Charts\CommonChart;
+use Illuminate\Support\Facades\DB;
+use Modules\Superadmin\Entities\Subscription;
 
 class SuperadminController extends BaseController
 {
@@ -25,9 +25,10 @@ class SuperadminController extends BaseController
             abort(403, 'Unauthorized action.');
         }
 
-        $date_filters['this_yr'] = ['start' => Carbon::today()->startOfYear()->toDateString(),
-                'end' => Carbon::today()->endOfYear()->toDateString()
-            ];
+        $date_filters['this_yr'] = [
+            'start' => Carbon::today()->startOfYear()->toDateString(),
+            'end' => Carbon::today()->endOfYear()->toDateString()
+        ];
         $date_filters['this_month']['start'] = date('Y-m-01');
         $date_filters['this_month']['end'] = date('Y-m-t');
         $date_filters['this_week']['start'] = date('Y-m-d', strtotime('monday this week'));
@@ -106,8 +107,9 @@ class SuperadminController extends BaseController
             ->first()
             ->total;
 
-        return ['new_subscriptions' => $subscription,
-                'new_registrations' => $registrations
-            ];
+        return [
+            'new_subscriptions' => $subscription,
+            'new_registrations' => $registrations
+        ];
     }
 }

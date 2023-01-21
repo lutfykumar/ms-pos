@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class SuperadminCommunicator extends Notification
+class SuperadminCommunicator extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -43,11 +43,11 @@ class SuperadminCommunicator extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->subject($this->input['subject'])
-                    ->view(
-                        'emails.plain_html',
-                        ['content' => $this->input['message']]
-                    );
+            ->subject($this->input['subject'])
+            ->view(
+                'emails.plain_html',
+                ['content' => $this->input['message']]
+            );
     }
 
     /**

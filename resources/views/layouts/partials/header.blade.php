@@ -125,8 +125,13 @@
                         <!-- hidden-xs hides the username on small devices so only the image appears. -->
                         <span>{{ Auth::User()->first_name }} {{ Auth::User()->last_name }}</span>
                     </a>
-                    <ul class="dropdown-menu">
-                        <!-- The user image in the menu -->
+                    <ul class="dropdown-menu dropdown-menu-user">
+                        <li><a href="{{ action('UserController@getProfile') }}"><i
+                                    class="fa fa-user"></i>@lang('lang_v1.profile')</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="{{ action('Auth\LoginController@logout') }}"><i
+                                    class="fa fa-sign-out-alt"></i>@lang('lang_v1.sign_out')</a></li>
+                        {{-- <!-- The user image in the menu -->
                         <li class="user-header">
                             @if (!empty(Session::get('business.logo')))
                                 <img src="{{ asset('uploads/business_logos/' . Session::get('business.logo')) }}"
@@ -147,7 +152,7 @@
                                 <a href="{{ action('Auth\LoginController@logout') }}"
                                     class="btn btn-default btn-flat">@lang('lang_v1.sign_out')</a>
                             </div>
-                        </li>
+                        </li> --}}
                     </ul>
                 </li>
                 <!-- Control Sidebar Toggle Button -->

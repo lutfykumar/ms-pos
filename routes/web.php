@@ -1,5 +1,19 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/clear-cache', function () {
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('event:clear');
+    Artisan::call('route:clear');
+    Artisan::call('view:clear');
+    Artisan::call('optimize:clear');
+    return 'DONE';
+});
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -53,7 +67,7 @@ Route::middleware(['auth', 'SetSessionData', 'language', 'timezone', 'AdminSideb
 
     Route::resource('brands', 'BrandController');
 
-    Route::resource('payment-account', 'PaymentAccountController');
+    // Route::resource('payment-account', 'PaymentAccountController');
 
     Route::resource('tax-rates', 'TaxRateController');
 
@@ -397,7 +411,7 @@ Route::middleware(['auth', 'SetSessionData', 'language', 'timezone', 'AdminSideb
 
 Route::middleware(['EcomApi'])->prefix('api/ecom')->group(function () {
     Route::get('products/{id?}', 'ProductController@getProductsApi');
-    Route::get('categories', 'CategoryController@getCategoriesApi');
+    // Route::get('categories', 'CategoryController@getCategoriesApi');
     Route::get('brands', 'BrandController@getBrandsApi');
     Route::post('customers', 'ContactController@postCustomersApi');
     Route::get('settings', 'BusinessController@getEcomSettings');

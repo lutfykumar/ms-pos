@@ -30,7 +30,12 @@
     <title>@yield('title') - {{ Session::get('business.name') }}</title>
 
     @include('layouts.partials.css')
-
+    <style>
+        .dropdown .dropdown-menu-user {
+            width: 100px !important;
+            padding: 7px 0 !important;
+        }
+    </style>
     @yield('css')
 </head>
 

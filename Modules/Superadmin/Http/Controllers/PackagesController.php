@@ -3,14 +3,16 @@
 namespace Modules\Superadmin\Http\Controllers;
 
 use App\System;
-use App\Utils\BusinessUtil;
+use Carbon\Carbon;
 
 use App\Utils\ModuleUtil;
+use App\Utils\BusinessUtil;
+
 use Illuminate\Http\Request;
-
 use Illuminate\Http\Response;
-use Modules\Superadmin\Entities\Package;
 
+use Illuminate\Support\Facades\Log;
+use Modules\Superadmin\Entities\Package;
 use Modules\Superadmin\Entities\Subscription;
 
 class PackagesController extends BaseController
@@ -45,7 +47,7 @@ class PackagesController extends BaseController
         }
 
         $packages = Package::orderby('sort_order', 'asc')
-                    ->paginate(20);
+            ->paginate(20);
 
         //Get all module permissions and convert them into name => label
         $permissions = $this->moduleUtil->getModuleData('superadmin_package');
@@ -90,8 +92,10 @@ class PackagesController extends BaseController
         }
 
         try {
-            $input = $request->only(['name', 'description', 'location_count', 'user_count', 'product_count', 'invoice_count', 'interval', 'interval_count', 'trial_days', 'price', 'sort_order', 'is_active', 'custom_permissions', 'is_private', 'is_one_time', 'enable_custom_link', 'custom_link',
-                'custom_link_text']);
+            $input = $request->only([
+                'name', 'description', 'location_count', 'user_count', 'product_count', 'invoice_count', 'interval', 'interval_count', 'trial_days', 'price', 'sort_order', 'is_active', 'custom_permissions', 'is_private', 'is_one_time', 'enable_custom_link', 'custom_link',
+                'custom_link_text'
+            ]);
 
             $currency = System::getCurrency();
 
@@ -112,11 +116,12 @@ class PackagesController extends BaseController
 
             $output = ['success' => 1, 'msg' => __('lang_v1.success')];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => 0,
-                            'msg' => __('messages.something_went_wrong')
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => 0,
+                'msg' => __('messages.something_went_wrong')
+            ];
         }
 
         return redirect()
@@ -140,14 +145,14 @@ class PackagesController extends BaseController
     public function edit($id)
     {
         $packages = Package::where('id', $id)
-                            ->first();
-        
+            ->first();
+
         $intervals = ['days' => __('lang_v1.days'), 'months' => __('lang_v1.months'), 'years' => __('lang_v1.years')];
 
         $permissions = $this->moduleUtil->getModuleData('superadmin_package', true);
 
         return view('superadmin::packages.edit')
-               ->with(compact('packages', 'intervals', 'permissions'));
+            ->with(compact('packages', 'intervals', 'permissions'));
     }
 
     /**
@@ -163,7 +168,7 @@ class PackagesController extends BaseController
 
         try {
             $packages_details = $request->only(['name', 'id', 'description', 'location_count', 'user_count', 'product_count', 'invoice_count', 'interval', 'interval_count', 'trial_days', 'price', 'sort_order', 'is_active', 'custom_permissions', 'is_private', 'is_one_time', 'enable_custom_link', 'custom_link', 'custom_link_text']);
-            
+
             $packages_details['is_active'] = empty($packages_details['is_active']) ? 0 : 1;
             $packages_details['custom_permissions'] = empty($packages_details['custom_permissions']) ? null : $packages_details['custom_permissions'];
 
@@ -174,7 +179,7 @@ class PackagesController extends BaseController
             $packages_details['custom_link_text'] = empty($packages_details['enable_custom_link']) ? '' : $packages_details['custom_link_text'];
 
             $package = Package::where('id', $id)
-                            ->first();
+                ->first();
             $package->fill($packages_details);
             $package->save();
 
@@ -194,17 +199,18 @@ class PackagesController extends BaseController
 
                 //Update subscription package details
                 $subscriptions = Subscription::where('package_id', $package->id)
-                                            ->whereDate('end_date', '>=', \Carbon::now())
-                                            ->update(['package_details' => json_encode($package_details)]);
+                    ->whereDate('end_date', '>=', Carbon::now())
+                    ->update(['package_details' => json_encode($package_details)]);
             }
 
             $output = ['success' => 1, 'msg' => __('lang_v1.success')];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => 0,
-                            'msg' => __('messages.something_went_wrong')
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => 0,
+                'msg' => __('messages.something_went_wrong')
+            ];
         }
 
         return redirect()
@@ -225,14 +231,15 @@ class PackagesController extends BaseController
         try {
             Package::where('id', $id)
                 ->delete();
-            
+
             $output = ['success' => 1, 'msg' => __('lang_v1.success')];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => 0,
-                            'msg' => __('messages.something_went_wrong')
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => 0,
+                'msg' => __('messages.something_went_wrong')
+            ];
         }
 
         return redirect()

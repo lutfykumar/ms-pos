@@ -21,10 +21,10 @@ class Business extends Model
     protected $guarded = ['id', 'woocommerce_api_settings'];
 
     /**
-      * The attributes that should be hidden for arrays.
-      *
-      * @var array
-      */
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
     protected $hidden = ['woocommerce_api_settings'];
 
     /**
@@ -87,8 +87,8 @@ class Business extends Model
     }
 
     /**
-    * Get the Business subscriptions.
-    */
+     * Get the Business subscriptions.
+     */
     public function subscriptions()
     {
         return $this->hasMany('\Modules\Superadmin\Entities\Subscription');
@@ -120,11 +120,11 @@ class Business extends Model
         }
     }
 
-    public function getBusinessAddressAttribute() 
+    public function getBusinessAddressAttribute()
     {
         $location = $this->locations->first();
-        $address = $location->landmark . ', ' .$location->city . 
-        ', ' . $location->state . '<br>' . $location->country . ', ' . $location->zip_code;
+        $address = $location->landmark . ', ' . $location->city .
+            ', ' . $location->state . '<br>' . $location->country . ', ' . $location->zip_code;
 
         return $address;
     }

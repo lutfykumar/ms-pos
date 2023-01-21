@@ -2,11 +2,12 @@
 
 namespace Modules\Superadmin\Http\Controllers;
 
-use \Notification;
 use App\System;
 use App\Utils\Util;
+use Nwidart\Menus\Facades\Menu;
 use Illuminate\Routing\Controller;
-use Menu;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Modules\Superadmin\Notifications\NewBusinessNotification;
 use Modules\Superadmin\Notifications\NewBusinessWelcomNotification;
 
@@ -19,8 +20,10 @@ class DataController extends Controller
     public function parse_notification($notification)
     {
         $notification_data = [];
-        if ($notification->type ==
-            'Modules\Superadmin\Notifications\SendSubscriptionExpiryAlert') {
+        if (
+            $notification->type ==
+            'Modules\Superadmin\Notifications\SendSubscriptionExpiryAlert'
+        ) {
             $data = $notification->data;
             $msg = __('superadmin::lang.subscription_expiry_alert', ['days_left' => $data['days_left'], 'app_name' => config('app.name')]);
 
@@ -31,8 +34,10 @@ class DataController extends Controller
                 'read_at' => $notification->read_at,
                 'created_at' => $notification->created_at->diffForHumans()
             ];
-        } else if($notification->type ==
-            'Modules\Superadmin\Notifications\SuperadminCommunicator') {
+        } else if (
+            $notification->type ==
+            'Modules\Superadmin\Notifications\SuperadminCommunicator'
+        ) {
             $msg = __('superadmin::lang.new_message_from_superadmin');
 
             $notification_data = [
@@ -57,25 +62,25 @@ class DataController extends Controller
         try {
             //Send new registration notification to superadmin
             $is_notif_enabled =
-            System::getProperty('enable_new_business_registration_notification');
+                System::getProperty('enable_new_business_registration_notification');
 
             $common_util = new Util();
-            
+
             if (!$common_util->IsMailConfigured()) {
                 return null;
             }
 
             $email = System::getProperty('email');
             $business = $data['business'];
-            
+
             if (!empty($email) && $is_notif_enabled == 1) {
                 Notification::route('mail', $email)
-                ->notify(new NewBusinessNotification($business));
+                    ->notify(new NewBusinessNotification($business));
             }
 
             //Send welcome email to business owner
             $welcome_email_settings = System::getProperties(['enable_welcome_email', 'welcome_email_subject', 'welcome_email_body'], true);
-            
+
             if (isset($welcome_email_settings['enable_welcome_email']) && $welcome_email_settings['enable_welcome_email'] == 1 && !empty($welcome_email_settings['welcome_email_subject']) && !empty($welcome_email_settings['welcome_email_body'])) {
                 $subject = $this->removeTags($welcome_email_settings['welcome_email_subject'], $business);
                 $body = $this->removeTags($welcome_email_settings['welcome_email_body'], $business);
@@ -86,10 +91,10 @@ class DataController extends Controller
                 ];
 
                 Notification::route('mail', $business->owner->email)
-                ->notify(new NewBusinessWelcomNotification($welcome_email_data));
+                    ->notify(new NewBusinessWelcomNotification($welcome_email_data));
             }
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
         }
 
         return null;
@@ -115,7 +120,7 @@ class DataController extends Controller
                 function ($menu) {
                     $menu->url(action('\Modules\Superadmin\Http\Controllers\SuperadminController@index'), __('superadmin::lang.superadmin'), ['icon' => 'fa fas fa-users-cog', 'active' => request()->segment(1) == 'superadmin'])->order(1);
                 }
-            );       
+            );
         }
 
         if (auth()->user()->can('superadmin.access_package_subscriptions') && auth()->user()->can('business_settings.access')) {

@@ -32,7 +32,7 @@ class ModuleUtil extends Util
                 return true;
             }
         }
-      
+
         return false;
     }
 
@@ -56,7 +56,7 @@ class ModuleUtil extends Util
     public function getModuleData($function_name, $arguments = null)
     {
         $modules = Module::toCollection()->toArray();
-        
+
         $installed_modules = [];
         foreach ($modules as $module => $details) {
             if ($this->isModuleInstalled($details['name'])) {
@@ -68,7 +68,7 @@ class ModuleUtil extends Util
         if (!empty($installed_modules)) {
             foreach ($installed_modules as $module) {
                 $class = 'Modules\\' . $module['name'] . '\Http\Controllers\DataController';
-                
+
                 if (class_exists($class)) {
                     $class_object = new $class();
                     if (method_exists($class_object, $function_name)) {
@@ -98,9 +98,11 @@ class ModuleUtil extends Util
         $check_for_enable = [];
 
         $output = !empty($is_installed) ? true : false;
-        
-        if (in_array($module_name, $check_for_enable) &&
-            !$this->isModuleEnabled(strtolower($module_name))) {
+
+        if (
+            in_array($module_name, $check_for_enable) &&
+            !$this->isModuleEnabled(strtolower($module_name))
+        ) {
             $output = false;
         }
 
@@ -117,12 +119,12 @@ class ModuleUtil extends Util
     {
         if ($this->isSuperadminInstalled()) {
             $package = \Modules\Superadmin\Entities\Subscription::active_subscription($business_id);
-           
+
             if (empty($package)) {
                 return false;
             }
         }
-      
+
         return true;
     }
 
@@ -139,12 +141,12 @@ class ModuleUtil extends Util
     {
         if ($this->isSuperadminInstalled()) {
 
-            if(auth()->user()->can('superadmin')){
+            if (auth()->user()->can('superadmin')) {
                 return true;
             }
 
             $package = \Modules\Superadmin\Entities\Subscription::active_subscription($business_id);
-           
+
             if (empty($package)) {
                 return false;
             } elseif (isset($package['package_details'][$permission])) {
@@ -171,7 +173,7 @@ class ModuleUtil extends Util
                 return false;
             }
         }
-      
+
         return true;
     }
 
@@ -182,14 +184,16 @@ class ModuleUtil extends Util
      */
     public static function expiredResponse($redirect_url = null)
     {
-        $response_array = ['success' => 0,
-                        'msg' => __(
-                            "superadmin::lang.subscription_expired_toastr",
-                            ['app_name' => config('app.name'),
-                                'subscribe_url' => action('\Modules\Superadmin\Http\Controllers\SubscriptionController@index')
-                            ]
-                        )
-                    ];
+        $response_array = [
+            'success' => 0,
+            'msg' => __(
+                "superadmin::lang.subscription_expired_toastr",
+                [
+                    'app_name' => config('app.name'),
+                    'subscribe_url' => action('\Modules\Superadmin\Http\Controllers\SubscriptionController@index')
+                ]
+            )
+        ];
 
         if (request()->ajax()) {
             if (request()->wantsJson()) {
@@ -211,7 +215,7 @@ class ModuleUtil extends Util
     public function countBusinessLocation($business_id)
     {
         $count = BusinessLocation::where('business_id', $business_id)
-                                ->count();
+            ->count();
 
         return $count;
     }
@@ -219,8 +223,8 @@ class ModuleUtil extends Util
     public function countUsers($business_id)
     {
         $count = User::where('business_id', $business_id)
-                                    ->where('allow_login', 1)
-                                    ->count();
+            ->where('allow_login', 1)
+            ->count();
 
         return $count;
     }
@@ -228,11 +232,11 @@ class ModuleUtil extends Util
     public function countProducts($business_id, $start_dt, $end_dt)
     {
         $query = Product::where('business_id', $business_id);
-        
+
         if (!empty($start_dt) && !empty($start_dt)) {
             $query->whereBetween('created_at', [$start_dt, $end_dt]);
         }
-                            
+
         $count = $query->count();
 
         return $count;
@@ -241,13 +245,13 @@ class ModuleUtil extends Util
     public function countInvoice($business_id, $start_dt, $end_dt)
     {
         $query = Transaction::where('business_id', $business_id)
-                            ->where('type', 'sell')
-                            ->where('status', 'final');
+            ->where('type', 'sell')
+            ->where('status', 'final');
 
         if (!empty($start_dt) && !empty($start_dt)) {
             $query->whereBetween('created_at', [$start_dt, $end_dt]);
         }
-                            
+
         $count = $query->count();
 
         return $count;
@@ -256,7 +260,7 @@ class ModuleUtil extends Util
     public function getResourceCount($business_id, $package)
     {
         $is_available = $this->isSuperadminInstalled();
-        
+
         $start_dt = null;
         $end_dt = null;
 
@@ -286,7 +290,7 @@ class ModuleUtil extends Util
     public function isQuotaAvailable($type, $business_id, $total_rows = 0)
     {
         $is_available = $this->isSuperadminInstalled();
-        
+
         if ($is_available) {
             $package = \Modules\Superadmin\Entities\Subscription::active_subscription($business_id);
 
@@ -334,7 +338,7 @@ class ModuleUtil extends Util
                 }
             } elseif ($type == 'invoices') {
                 $max_allowed = isset($package->package_details['invoice_count']) ? $package->package_details['invoice_count'] : 0;
-                
+
                 if ($max_allowed == 0) {
                     return true;
                 } else {
@@ -363,31 +367,35 @@ class ModuleUtil extends Util
         if ($type == 'locations') {
             if (request()->ajax()) {
                 if (request()->wantsJson()) {
-                    $response_array = ['success' => 0,
-                            'msg' => __("superadmin::lang.max_locations")
-                        ];
+                    $response_array = [
+                        'success' => 0,
+                        'msg' => __("superadmin::lang.max_locations")
+                    ];
                     return $response_array;
                 } else {
                     return view('superadmin::subscription.max_location_modal');
                 }
             }
         } elseif ($type == 'users') {
-            $response_array = ['success' => 0,
-                        'msg' => __("superadmin::lang.max_users")
-                    ];
+            $response_array = [
+                'success' => 0,
+                'msg' => __("superadmin::lang.max_users")
+            ];
             return redirect($redirect_url)
-                    ->with('status', $response_array);
+                ->with('status', $response_array);
         } elseif ($type == 'products') {
-            $response_array = ['success' => 0,
-                        'msg' => __("superadmin::lang.max_products")
-                    ];
+            $response_array = [
+                'success' => 0,
+                'msg' => __("superadmin::lang.max_products")
+            ];
 
             return redirect($redirect_url)
-                    ->with('status', $response_array);
+                ->with('status', $response_array);
         } elseif ($type == 'invoices') {
-            $response_array = ['success' => 0,
-                        'msg' => __("superadmin::lang.max_invoices")
-                    ];
+            $response_array = [
+                'success' => 0,
+                'msg' => __("superadmin::lang.max_invoices")
+            ];
 
             if (request()->wantsJson()) {
                 return $response_array;
@@ -436,7 +444,7 @@ class ModuleUtil extends Util
     public function getApiSettings($api_token)
     {
         $settings = \Modules\Ecommerce\Entities\EcomApiSetting::where('api_token', $api_token)
-                                ->first();
+            ->first();
 
         return $settings;
     }
@@ -450,10 +458,11 @@ class ModuleUtil extends Util
      */
     public function getModuleVersionInfo($module_name)
     {
-        $output = ['installed_version' => null,
-                    'available_version' => null,
-                    'is_update_available' => null
-                ];
+        $output = [
+            'installed_version' => null,
+            'available_version' => null,
+            'is_update_available' => null
+        ];
 
         $is_available = Module::has($module_name);
 
@@ -466,7 +475,7 @@ class ModuleUtil extends Util
 
             $output['is_update_available'] = Comparator::greaterThan($output['available_version'], $output['installed_version']);
         }
-        
+
         return $output;
     }
 
@@ -480,24 +489,27 @@ class ModuleUtil extends Util
             'stock_adjustment' => ['name' => __('stock_adjustment.stock_adjustment')],
             'expenses' => ['name' => __('expense.expenses')],
             'account' => ['name' => __('lang_v1.account')],
-            'tables' => [ 'name' => __('restaurant.tables'),
-                        'tooltip' => __('restaurant.tooltip_tables')
-                    ] ,
-            'modifiers' => [ 'name' => __('restaurant.modifiers'),
-                    'tooltip' => __('restaurant.tooltip_modifiers')
-                ],
+            'tables' => [
+                'name' => __('restaurant.tables'),
+                'tooltip' => __('restaurant.tooltip_tables')
+            ],
+            'modifiers' => [
+                'name' => __('restaurant.modifiers'),
+                'tooltip' => __('restaurant.tooltip_modifiers')
+            ],
             'service_staff' => [
-                    'name' => __('restaurant.service_staff'),
-                    'tooltip' => __('restaurant.tooltip_service_staff')
-                ],
+                'name' => __('restaurant.service_staff'),
+                'tooltip' => __('restaurant.tooltip_service_staff')
+            ],
             'booking' => ['name' => __('lang_v1.enable_booking')],
             'kitchen' => [
                 'name' => __('restaurant.kitchen_for_restaurant')
             ],
             'subscription' => ['name' => __('lang_v1.enable_subscription')],
-            'types_of_service' => ['name' => __('lang_v1.types_of_service'),
-                        'tooltip' => __('lang_v1.types_of_service_help_long')
-                    ]
+            'types_of_service' => [
+                'name' => __('lang_v1.types_of_service'),
+                'tooltip' => __('lang_v1.types_of_service_help_long')
+            ]
         ];
     }
 

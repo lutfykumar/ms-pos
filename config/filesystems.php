@@ -51,7 +51,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
         ],
 
@@ -65,7 +65,7 @@ return [
 
         'dropbox' => [
             'driver' => 'dropbox',
-            'authorizationToken' => env('DROPBOX_ACCESS_TOKEN')
+            'authorizationToken' => env('DROPBOX_ACCESS_TOKEN', 'sl.BW6_wcnMey7zK6wb-0kc6BvorMqzPlAh4HAK7HE4itTHFuNYpW2FHQpCCAWwCa24sBXc8e1st6kpRrbNfi0qhvT8ghbQl_t9ukSwiefQBQm1V7Of103WSv5XSMvg6hGX-CM-fV4')
         ],
 
     ],

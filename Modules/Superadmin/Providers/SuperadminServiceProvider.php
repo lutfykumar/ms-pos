@@ -3,10 +3,11 @@
 namespace Modules\Superadmin\Providers;
 
 use App\System;
-use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Database\Eloquent\Factory;
+use Illuminate\Console\Scheduling\Schedule;
 use Modules\Superadmin\Entities\Subscription;
 use Modules\Superadmin\Entities\SuperadminFrontendPage;
 
@@ -47,8 +48,8 @@ class SuperadminServiceProvider extends ServiceProvider
 
         view::composer(['layouts.partials.home_header'], function ($view) {
             $frontend_pages = SuperadminFrontendPage::where('is_shown', 1)
-                                                ->orderBy('menu_order', 'asc')
-                                                ->get();
+                ->orderBy('menu_order', 'asc')
+                ->get();
             $view->with(compact('frontend_pages'));
         });
 
@@ -91,10 +92,10 @@ class SuperadminServiceProvider extends ServiceProvider
     protected function registerConfig()
     {
         $this->publishes([
-            __DIR__.'/../Config/config.php' => config_path('superadmin.php'),
+            __DIR__ . '/../Config/config.php' => config_path('superadmin.php'),
         ], 'config');
         $this->mergeConfigFrom(
-            __DIR__.'/../Config/config.php',
+            __DIR__ . '/../Config/config.php',
             'superadmin'
         );
     }
@@ -108,7 +109,7 @@ class SuperadminServiceProvider extends ServiceProvider
     {
         $viewPath = resource_path('views/modules/superadmin');
 
-        $sourcePath = __DIR__.'/../Resources/views';
+        $sourcePath = __DIR__ . '/../Resources/views';
 
         $this->publishes([
             $sourcePath => $viewPath
@@ -116,7 +117,7 @@ class SuperadminServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(array_merge(array_map(function ($path) {
             return $path . '/modules/superadmin';
-        }, \Config::get('view.paths')), [$sourcePath]), 'superadmin');
+        }, Config::get('view.paths')), [$sourcePath]), 'superadmin');
     }
 
     /**
@@ -131,7 +132,7 @@ class SuperadminServiceProvider extends ServiceProvider
         if (is_dir($langPath)) {
             $this->loadTranslationsFrom($langPath, 'superadmin');
         } else {
-            $this->loadTranslationsFrom(__DIR__ .'/../Resources/lang', 'superadmin');
+            $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', 'superadmin');
         }
     }
 
@@ -142,7 +143,7 @@ class SuperadminServiceProvider extends ServiceProvider
      */
     public function registerFactories()
     {
-        if (! app()->environment('production')) {
+        if (!app()->environment('production')) {
             app(Factory::class)->load(__DIR__ . '/../Database/factories');
         }
     }
