@@ -2,12 +2,12 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Artisan;
-
 use App\Utils\ModuleUtil;
+use Illuminate\Console\Command;
 
-use DB;
+use Illuminate\Support\Facades\DB;
+
+use Illuminate\Support\Facades\Artisan;
 
 class CreateDummyBusiness extends Command
 {

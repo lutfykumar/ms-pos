@@ -4,16 +4,21 @@ namespace App\Console\Commands;
 
 use App\Business;
 
+use Carbon\Carbon;
 use App\Transaction;
-use App\Utils\NotificationUtil;
 
 use App\Utils\ProductUtil;
 use App\Utils\TransactionUtil;
+use App\Utils\NotificationUtil;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class UpdateRewardPoints extends Command
 {
+    protected $transactionUtil;
+    protected $productUtil;
+    protected $notificationUtil;
     /**
      * The name and signature of the console command.
      *
@@ -61,7 +66,7 @@ class UpdateRewardPoints extends Command
                     continue;
                 }
 
-                $transaction_date_to_be_expired = \Carbon::now();
+                $transaction_date_to_be_expired = Carbon::now();
                 if ($business->rp_expiry_type == 'month') {
                     $transaction_date_to_be_expired = $transaction_date_to_be_expired->subMonths($business->rp_expiry_period);
                 } elseif ($business->rp_expiry_type == 'year') {
@@ -69,16 +74,16 @@ class UpdateRewardPoints extends Command
                 }
 
                 $transactions = Transaction::where('business_id', $business->id)
-                                        ->where('type', 'sell')
-                                        ->where('status', 'final')
-                                        ->whereDate('transaction_date', '<=', $transaction_date_to_be_expired->format('Y-m-d'))
-                                        ->whereNotNull('rp_earned')
-                                        ->with(['contact'])
-                                        ->select(
-                                            DB::raw('SUM(COALESCE(rp_earned, 0)) as total_rp_expired'),
-                                            'contact_id'
-                                        )->groupBy('contact_id')
-                                        ->get();
+                    ->where('type', 'sell')
+                    ->where('status', 'final')
+                    ->whereDate('transaction_date', '<=', $transaction_date_to_be_expired->format('Y-m-d'))
+                    ->whereNotNull('rp_earned')
+                    ->with(['contact'])
+                    ->select(
+                        DB::raw('SUM(COALESCE(rp_earned, 0)) as total_rp_expired'),
+                        'contact_id'
+                    )->groupBy('contact_id')
+                    ->get();
 
                 foreach ($transactions as $transaction) {
                     if (!empty($transaction->total_rp_expired) && $transaction->contact->total_rp_used < $transaction->total_rp_expired) {
@@ -96,7 +101,7 @@ class UpdateRewardPoints extends Command
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             die($e->getMessage());
         }

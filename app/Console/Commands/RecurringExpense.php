@@ -2,15 +2,19 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Transaction;
 use App\User;
+use Carbon\Carbon;
+use App\Transaction;
 use App\Utils\TransactionUtil;
 use App\Utils\NotificationUtil;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RecurringExpense extends Command
 {
+    protected $transactionUtil;
+    protected $notificationUtil;
     /**
      * The name and signature of the console command.
      *
@@ -49,17 +53,17 @@ class RecurringExpense extends Command
             ini_set('max_execution_time', 0);
             ini_set('memory_limit', '512M');
             $transactions = Transaction::where('is_recurring', 1)
-                                ->where('type', 'expense')
-                                ->whereNull('recur_stopped_on')
-                                ->whereNotNull('recur_interval')
-                                ->whereNotNull('recur_interval_type')
-                                ->with(['recurring_invoices', 'business'])
-                                ->get();
+                ->where('type', 'expense')
+                ->whereNull('recur_stopped_on')
+                ->whereNotNull('recur_interval')
+                ->whereNotNull('recur_interval_type')
+                ->with(['recurring_invoices', 'business'])
+                ->get();
 
             foreach ($transactions as $transaction) {
                 date_default_timezone_set($transaction->business->time_zone);
                 //inner try-catch block open
-                try { 
+                try {
 
                     //Check if no. of generated invoices exceed limit
                     $no_of_recurring_invoice_generated = count($transaction->recurring_invoices);
@@ -72,9 +76,9 @@ class RecurringExpense extends Command
                     $last_generated = $no_of_recurring_invoice_generated > 0 ? $transaction->recurring_invoices->max('transaction_date') : $transaction->transaction_date;
 
                     if (!empty($last_generated)) {
-                        $last_generated_string = \Carbon::parse($last_generated)->format('Y-m-d');
-                        $last_generated = \Carbon::parse($last_generated_string);
-                        $today = \Carbon::parse(\Carbon::now()->format('Y-m-d'));
+                        $last_generated_string = Carbon::parse($last_generated)->format('Y-m-d');
+                        $last_generated = Carbon::parse($last_generated_string);
+                        $today = Carbon::parse(Carbon::now()->format('Y-m-d'));
                         $diff_from_today = 0;
                         if ($transaction->recur_interval_type == 'days') {
                             $diff_from_today = $last_generated->diffInDays($today);
@@ -83,13 +87,13 @@ class RecurringExpense extends Command
                             //check repeat on date and set last generated date part to reapeat on date
                             if (!empty($transaction->subscription_repeat_on)) {
                                 $last_generated_string = $last_generated->format('Y-m');
-                                $last_generated = \Carbon::parse($last_generated_string . '-' . $transaction->subscription_repeat_on);
+                                $last_generated = Carbon::parse($last_generated_string . '-' . $transaction->subscription_repeat_on);
                             }
                             $diff_from_today = $last_generated->diffInMonths($today);
                         } elseif ($transaction->recur_interval_type == 'years') {
                             $diff_from_today = $last_generated->diffInYears($today);
                         }
-                        
+
                         //if last generated is today or less than today then continue
                         if ($diff_from_today == 0) {
                             continue;
@@ -118,13 +122,12 @@ class RecurringExpense extends Command
                     DB::commit();
                 } catch (\Exception $e) {
                     DB::rollBack();
-                    \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                    Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
                 }
                 //inner try-catch block close
             }
-
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
             die($e->getMessage());
         }
     }

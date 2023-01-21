@@ -2,19 +2,25 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-
-use App\Transaction;
-use App\Contact;
 use App\User;
+use App\Contact;
+
+use Carbon\Carbon;
+use App\Transaction;
+use App\Utils\ProductUtil;
 
 use App\Utils\TransactionUtil;
-use App\Utils\ProductUtil;
 use App\Utils\NotificationUtil;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RecurringInvoice extends Command
 {
+
+    protected $transactionUtil;
+    protected $productUtil;
+    protected $notificationUtil;
     /**
      * The name and signature of the console command.
      *
@@ -54,23 +60,27 @@ class RecurringInvoice extends Command
             ini_set('max_execution_time', 0);
             ini_set('memory_limit', '512M');
             $transactions = Transaction::where('is_recurring', 1)
-                                ->where('type', 'sell')
-                                ->where('status', 'final')
-                                ->whereNull('recur_stopped_on')
-                                ->whereNotNull('recur_interval')
-                                ->whereNotNull('recur_interval_type')
-                                ->with(['recurring_invoices',
-                                    'sell_lines', 'business',
-                                    'sell_lines.product'])
-                                ->get();
+                ->where('type', 'sell')
+                ->where('status', 'final')
+                ->whereNull('recur_stopped_on')
+                ->whereNotNull('recur_interval')
+                ->whereNotNull('recur_interval_type')
+                ->with([
+                    'recurring_invoices',
+                    'sell_lines', 'business',
+                    'sell_lines.product'
+                ])
+                ->get();
 
             foreach ($transactions as $transaction) {
                 date_default_timezone_set($transaction->business->time_zone);
                 //inner try-catch block open
-                try { 
+                try {
                     //Check if recurring invoice is enabled
-                    if (!empty($transaction->business->enabled_modules)
-                        && !in_array('subscription', $transaction->business->enabled_modules)) {
+                    if (
+                        !empty($transaction->business->enabled_modules)
+                        && !in_array('subscription', $transaction->business->enabled_modules)
+                    ) {
                         continue;
                     }
 
@@ -85,9 +95,9 @@ class RecurringInvoice extends Command
                     $last_generated = $no_of_recurring_invoice_generated > 0 ? $transaction->recurring_invoices->max('transaction_date') : $transaction->transaction_date;
 
                     if (!empty($last_generated)) {
-                        $last_generated_string = \Carbon::parse($last_generated)->format('Y-m-d');
-                        $last_generated = \Carbon::parse($last_generated_string);
-                        $today = \Carbon::parse(\Carbon::now()->format('Y-m-d'));
+                        $last_generated_string = Carbon::parse($last_generated)->format('Y-m-d');
+                        $last_generated = Carbon::parse($last_generated_string);
+                        $today = Carbon::parse(Carbon::now()->format('Y-m-d'));
                         $diff_from_today = 0;
                         if ($transaction->recur_interval_type == 'days') {
                             $diff_from_today = $last_generated->diffInDays($today);
@@ -96,13 +106,13 @@ class RecurringInvoice extends Command
                             //check repeat on date and set last generated date part to reapeat on date
                             if (!empty($transaction->subscription_repeat_on)) {
                                 $last_generated_string = $last_generated->format('Y-m');
-                                $last_generated = \Carbon::parse($last_generated_string . '-' . $transaction->subscription_repeat_on);
+                                $last_generated = Carbon::parse($last_generated_string . '-' . $transaction->subscription_repeat_on);
                             }
                             $diff_from_today = $last_generated->diffInMonths($today);
                         } elseif ($transaction->recur_interval_type == 'years') {
                             $diff_from_today = $last_generated->diffInYears($today);
                         }
-                        
+
                         //if last generated is today or less than today then continue
                         if ($diff_from_today == 0) {
                             continue;
@@ -128,7 +138,7 @@ class RecurringInvoice extends Command
                             }
                         }
                     }
-                    
+
                     DB::beginTransaction();
                     //Create new recurring invoice
                     $recurring_invoice = $this->transactionUtil->createRecurringInvoice($transaction, $save_as_draft);
@@ -141,13 +151,14 @@ class RecurringInvoice extends Command
                                 $sell_line->variation_id,
                                 $transaction->location_id,
                                 $sell_line->quantity
-                                );
+                            );
                         }
 
-                        $business = ['id' => $transaction->business_id,
-                                        'accounting_method' => $transaction->business->accounting_method,
-                                        'location_id' => $transaction->location_id
-                                    ];
+                        $business = [
+                            'id' => $transaction->business_id,
+                            'accounting_method' => $transaction->business->accounting_method,
+                            'location_id' => $transaction->location_id
+                        ];
 
                         $this->transactionUtil->mapPurchaseSell($business, $recurring_invoice->sell_lines, 'purchase');
 
@@ -172,13 +183,12 @@ class RecurringInvoice extends Command
                     DB::commit();
                 } catch (\Exception $e) {
                     DB::rollBack();
-                    \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                    Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
                 }
                 //inner try-catch block close
             }
-
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
             die($e->getMessage());
         }
     }

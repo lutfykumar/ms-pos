@@ -2,16 +2,18 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Utils\NotificationUtil;
 use App\Business;
 use App\Transaction;
-use \Notification;
-use App\Notifications\CustomerNotification;
 use App\NotificationTemplate;
+use App\Utils\NotificationUtil;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
+use App\Notifications\CustomerNotification;
+use Illuminate\Support\Facades\Notification;
 
 class AutoSendPaymentReminder extends Command
 {
+    protected $notificationUtil;
     /**
      * The name and signature of the console command.
      *
@@ -48,15 +50,15 @@ class AutoSendPaymentReminder extends Command
         try {
             ini_set('max_execution_time', 0);
             ini_set('memory_limit', '512M');
-            
+
             $templates = NotificationTemplate::where('template_for', 'payment_reminder')
-                                        ->where( function($q) {
-                                            $q->where('auto_send', 1)
-                                            ->orWhere('auto_send_sms', 1)
-                                            ->orWhere('auto_send_wa_notif', 1);
-                                        })
-                                        ->get();
-                                        
+                ->where(function ($q) {
+                    $q->where('auto_send', 1)
+                        ->orWhere('auto_send_sms', 1)
+                        ->orWhere('auto_send_wa_notif', 1);
+                })
+                ->get();
+
 
             foreach ($templates as $template) {
 
@@ -73,7 +75,7 @@ class AutoSendPaymentReminder extends Command
                     'auto_send' => !empty($template->auto_send) ? 1 : 0,
                     'auto_send_sms' => !empty($template->auto_send_sms) ? 1 : 0,
                     'auto_send_wa_notif' => !empty($template->auto_send_wa_notif)
-                     ? 1 : 0
+                        ? 1 : 0
                 ];
 
                 $orig_data = [
@@ -85,20 +87,20 @@ class AutoSendPaymentReminder extends Command
 
                 if (!empty($data['auto_send']) || !empty($data['auto_send_sms'])) {
                     $overdue_sells = Transaction::where('transactions.business_id', $business->id)
-                                    ->where('transactions.type', 'sell')
-                                    ->where('transactions.status', 'final')
-                                    ->leftjoin('activity_log as a', function($join){
-                                        $join->on('a.subject_id', '=', 'transactions.id')
-                                            ->where('subject_type', 'App\Transaction')
-                                            ->where('description', 'payment_reminder');
-                                    })
-                                    ->whereNull('a.id')
-                                    ->with(['contact', 'payment_lines'])
-                                    ->select('transactions.*')
-                                    ->groupBy('transactions.id')
-                                    ->OverDue()
-                                    ->get();
-                    
+                        ->where('transactions.type', 'sell')
+                        ->where('transactions.status', 'final')
+                        ->leftjoin('activity_log as a', function ($join) {
+                            $join->on('a.subject_id', '=', 'transactions.id')
+                                ->where('subject_type', 'App\Transaction')
+                                ->where('description', 'payment_reminder');
+                        })
+                        ->whereNull('a.id')
+                        ->with(['contact', 'payment_lines'])
+                        ->select('transactions.*')
+                        ->groupBy('transactions.id')
+                        ->OverDue()
+                        ->get();
+
                     foreach ($overdue_sells as $sell) {
                         $tag_replaced_data = $this->notificationUtil->replaceTags($business, $orig_data, $sell);
 
@@ -118,9 +120,8 @@ class AutoSendPaymentReminder extends Command
 
                                 $this->notificationUtil->activityLog($sell, 'payment_reminder', null, ['email' => $sell->contact->email, 'is_automatic' => true], false);
                             } catch (\Exception $e) {
-                                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
                             }
-                            
                         }
 
                         //send sms notification
@@ -130,18 +131,16 @@ class AutoSendPaymentReminder extends Command
 
                                 $this->notificationUtil->activityLog($sell, 'payment_reminder', null, ['mobile' => $sell->contact->mobile, 'is_automatic' => true], false);
                             } catch (\Exception $e) {
-                                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
                             }
                         }
 
                         //TODO:: whatsapp notification to be implemented
                     }
-
                 }
             }
-            
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             die($e->getMessage());
         }
