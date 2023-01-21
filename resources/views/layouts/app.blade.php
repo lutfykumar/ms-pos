@@ -26,7 +26,7 @@
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/*" href="{{ asset('favicon.ico') }}">
     <title>@yield('title') - {{ Session::get('business.name') }}</title>
 
     @include('layouts.partials.css')

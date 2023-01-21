@@ -24,3 +24,4 @@ npm-debug.log
 /public/mix-manifest.json
 error_log
 public/error_log
+public/uploads
