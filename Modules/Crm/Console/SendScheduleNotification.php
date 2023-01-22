@@ -2,16 +2,16 @@
 
 namespace Modules\Crm\Console;
 
-use App\Business;
 use App\User;
-use App\Utils\NotificationUtil;
+use App\Business;
+use Carbon\Carbon;
 
 use App\Utils\Util;
-use Carbon\Carbon;
+use App\Utils\NotificationUtil;
 use Illuminate\Console\Command;
 use Modules\Crm\Entities\Schedule;
+use Illuminate\Support\Facades\Notification;
 use Modules\Crm\Notifications\ScheduleNotification;
-use Notification;
 
 class SendScheduleNotification extends Command
 {
@@ -51,9 +51,9 @@ class SendScheduleNotification extends Command
     public function handle()
     {
         $schedules = Schedule::with('users', 'createdBy')
-                        ->where('allow_notification', 1)
-                        ->where('start_datetime', '>=', Carbon::now())
-                        ->get();
+            ->where('allow_notification', 1)
+            ->where('start_datetime', '>=', Carbon::now())
+            ->get();
 
         foreach ($schedules as $key => $schedule) {
             $notifiy_before = 0;
@@ -72,8 +72,8 @@ class SendScheduleNotification extends Command
                 $business_id = $schedule->business_id;
                 $contact_id = $schedule->contact_id;
                 $users = User::where('business_id', $business_id)
-                            ->where('contact_id', $contact_id)
-                            ->get();
+                    ->where('contact_id', $contact_id)
+                    ->get();
 
                 $notifiable_users = $users->merge($schedule->users);
 
@@ -87,9 +87,9 @@ class SendScheduleNotification extends Command
                 $schedule['body'] = __(
                     'crm::lang.schedule_notification',
                     [
-                    'created_by' => $schedule->createdBy->user_full_name,
-                    'title' => $schedule->title,
-                    'startdatetime' => $startdatetime
+                        'created_by' => $schedule->createdBy->user_full_name,
+                        'title' => $schedule->title,
+                        'startdatetime' => $startdatetime
                     ]
                 );
                 $schedule['link'] = '';
@@ -99,7 +99,7 @@ class SendScheduleNotification extends Command
                 if ($schedule->notify_via['mail']) {
                     $delivery_channel[] = 'mail';
                 }
-                
+
                 //send notifiction
                 Notification::send($notifiable_users, new ScheduleNotification($schedule, $delivery_channel));
                 if ($schedule->notify_via['sms']) {

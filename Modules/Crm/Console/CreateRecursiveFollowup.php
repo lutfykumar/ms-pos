@@ -2,14 +2,16 @@
 
 namespace Modules\Crm\Console;
 
-use Illuminate\Console\Command;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputArgument;
-use Modules\Crm\Entities\Schedule;
+use App\Contact;
+use Carbon\Carbon;
 use App\Transaction;
 use Modules\Crm\Utils\CrmUtil;
-use App\Contact;
-use DB;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
+use Modules\Crm\Entities\Schedule;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\InputArgument;
 
 class CreateRecursiveFollowup extends Command
 {
@@ -45,8 +47,8 @@ class CreateRecursiveFollowup extends Command
     public function handle()
     {
         $recursive_followups = Schedule::where('is_recursive', 1)
-                                    ->with(['users', 'createdBy'])
-                                    ->get();
+            ->with(['users', 'createdBy'])
+            ->get();
 
         try {
             DB::beginTransaction();
@@ -58,10 +60,9 @@ class CreateRecursiveFollowup extends Command
                 }
             }
             DB::commit();
-            
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
         }
     }
 
@@ -69,23 +70,23 @@ class CreateRecursiveFollowup extends Command
     {
         $days = $recursive_followup->recursion_days;
 
-        $current_date = \Carbon::now()->format('Y-m-d');
+        $current_date = Carbon::now()->format('Y-m-d');
         $days_diff = $recursive_followup->recursion_days;
 
         $customers = Contact::where('contacts.business_id', $recursive_followup->business_id)
-                        ->OnlyCustomers()
-                        ->leftJoin('transactions as t', 't.contact_id', '=', 'contacts.id')
-                        ->havingRaw("DATEDIFF('{$current_date}', MAX(DATE(transaction_date))) = {$days_diff}")
-                        ->orHavingRaw("(transaction_date IS NULL AND DATEDIFF('{$current_date}', DATE(contacts.created_at)) =  {$days_diff})")
-                        ->select('contacts.*', 't.transaction_date')
-                        ->groupBy('contacts.id')
-                        ->get();
+            ->OnlyCustomers()
+            ->leftJoin('transactions as t', 't.contact_id', '=', 'contacts.id')
+            ->havingRaw("DATEDIFF('{$current_date}', MAX(DATE(transaction_date))) = {$days_diff}")
+            ->orHavingRaw("(transaction_date IS NULL AND DATEDIFF('{$current_date}', DATE(contacts.created_at)) =  {$days_diff})")
+            ->select('contacts.*', 't.transaction_date')
+            ->groupBy('contacts.id')
+            ->get();
 
         $input = [
             'follow_up_by' => 'orders',
             'title' => $recursive_followup->title,
             'status' => $recursive_followup->status,
-            'start_datetime' => \Carbon::now()->format('Y-m-d H:i:s'),
+            'start_datetime' => Carbon::now()->format('Y-m-d H:i:s'),
             'description' => $recursive_followup->description,
             'schedule_type' => $recursive_followup->schedule_type,
             'allow_notification' => $recursive_followup->allow_notification,
@@ -108,7 +109,6 @@ class CreateRecursiveFollowup extends Command
 
             $crmUtil->addAdvanceFollowUp($input, $recursive_followup->createdBy);
         }
-
     }
 
     private function createRecursiveFollowupByPaymentStatus($recursive_followup)
@@ -117,13 +117,13 @@ class CreateRecursiveFollowup extends Command
             return false;
         }
 
-        $current_date = \Carbon::now()->format('Y-m-d');
+        $current_date = Carbon::now()->format('Y-m-d');
         $days_diff = $recursive_followup->recursion_days;
 
         $query = Transaction::where('business_id', $recursive_followup->business_id)
-                            ->where('type', 'sell')
-                            ->where('status', 'final')
-                            ->whereRaw("DATEDIFF('$current_date', DATE(transaction_date)) = $days_diff");
+            ->where('type', 'sell')
+            ->where('status', 'final')
+            ->whereRaw("DATEDIFF('$current_date', DATE(transaction_date)) = $days_diff");
 
         if ($recursive_followup->follow_up_by_value == 'all') {
             $query->whereIn('payment_status', ['due', 'partial']);
@@ -141,7 +141,7 @@ class CreateRecursiveFollowup extends Command
             'follow_up_by' => 'payment_status',
             'title' => $recursive_followup->title,
             'status' => $recursive_followup->status,
-            'start_datetime' => \Carbon::now()->format('Y-m-d H:i:s'),
+            'start_datetime' => Carbon::now()->format('Y-m-d H:i:s'),
             'description' => $recursive_followup->description,
             'schedule_type' => $recursive_followup->schedule_type,
             'allow_notification' => $recursive_followup->allow_notification,

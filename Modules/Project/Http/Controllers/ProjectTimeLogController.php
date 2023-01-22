@@ -2,17 +2,20 @@
 
 namespace Modules\Project\Http\Controllers;
 
+use Exception;
+use Carbon\Carbon;
 use App\Utils\Util;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Modules\Project\Entities\Project;
-use Modules\Project\Entities\ProjectMember;
-use Modules\Project\Entities\ProjectTask;
-use Modules\Project\Entities\ProjectTimeLog;
 use Modules\Project\Utils\ProjectUtil;
 use Yajra\DataTables\Facades\DataTables;
+use Modules\Project\Entities\ProjectTask;
+use Modules\Project\Entities\ProjectMember;
+use Modules\Project\Entities\ProjectTimeLog;
 
 class ProjectTimeLogController extends Controller
 {
@@ -43,9 +46,9 @@ class ProjectTimeLogController extends Controller
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');
             $project_id = request()->get('project_id');
-            
+
             $project = Project::where('business_id', $business_id)
-                            ->findOrFail($project_id);
+                ->findOrFail($project_id);
 
             $project_task_time_logs = ProjectTimeLog::where('project_id', $project_id)
                 ->with('task', 'user', 'project')
@@ -64,43 +67,43 @@ class ProjectTimeLogController extends Controller
             }
 
             return Datatables::of($project_task_time_logs)
-                    ->addColumn('action', function ($row) use ($can_crud) {
-                        $html = '<div class="btn-group">
+                ->addColumn('action', function ($row) use ($can_crud) {
+                    $html = '<div class="btn-group">
                                     <button class="btn btn-info dropdown-toggle btn-xs" type="button"  data-toggle="dropdown" aria-expanded="false">
-                                        '.__("messages.action").'
+                                        ' . __("messages.action") . '
                                         <span class="caret"></span>
                                         <span class="sr-only">
-                                        '.__("messages.action").'
+                                        ' . __("messages.action") . '
                                         </span>
                                     </button>
                                     ';
 
-                        if ($can_crud) {
-                            $html .= '<ul class="dropdown-menu dropdown-menu-left" role="menu">
+                    if ($can_crud) {
+                        $html .= '<ul class="dropdown-menu dropdown-menu-left" role="menu">
                                 <li>
                                     <a data-href="' . action('\Modules\Project\Http\Controllers\ProjectTimeLogController@edit', ['id' => $row->id, 'project_id' => $row->project_id]) . '" class="cursor-pointer time_log_btn">
                                         <i class="fa fa-edit"></i>
-                                        '.__("messages.edit").'
+                                        ' . __("messages.edit") . '
                                     </a>
                                 </li>
                                 <li>
                                     <a data-href="' . action('\Modules\Project\Http\Controllers\ProjectTimeLogController@destroy', ['id' => $row->id]) . '"  id="delete_a_time_log" class="cursor-pointer">
                                         <i class="fas fa-trash"></i>
-                                        '.__("messages.delete").'
+                                        ' . __("messages.delete") . '
                                     </a>
                                 </li>
                                 </ul>';
-                        }
+                    }
 
-                        $html .= '
+                    $html .= '
                                 </div>';
 
-                        return $html;
-                    })
+                    return $html;
+                })
                 ->editColumn('task', function ($row) {
                     $task = '';
                     if (!empty($row->task)) {
-                        $html = ' <code>('.$row->task->task_id.')</code>';
+                        $html = ' <code>(' . $row->task->task_id . ')</code>';
                         $task = $row->task->subject . $html;
                     }
 
@@ -113,8 +116,8 @@ class ProjectTimeLogController extends Controller
                     {{@format_datetime($end_datetime)}}
                 ')
                 ->editColumn('work_hour', function ($row) {
-                    $start_datetime = \Carbon::parse($row->start_datetime);
-                    $end_datetime = \Carbon::parse($row->end_datetime);
+                    $start_datetime = Carbon::parse($row->start_datetime);
+                    $end_datetime = Carbon::parse($row->end_datetime);
 
                     return $start_datetime->diffForHumans($end_datetime, true);
                 })
@@ -166,7 +169,7 @@ class ProjectTimeLogController extends Controller
     {
         try {
             $input = $request->only('project_id', 'project_task_id', 'note');
-            
+
             $input['start_datetime'] = $this->commonUtil->uf_date($request->input('start_datetime'), true);
             $input['end_datetime'] = $this->commonUtil->uf_date($request->input('end_datetime'), true);
             $input['created_by'] = $request->session()->get('user.id');
@@ -188,12 +191,12 @@ class ProjectTimeLogController extends Controller
             $added_from = $request->get('added_from');
             if (!empty($added_from) && $added_from == 'task') {
                 $project_task = ProjectTask::with(['timeLogs', 'timeLogs.user'])
-                        ->where('project_id', $input['project_id'])
-                        ->findOrFail($input['project_task_id']);
+                    ->where('project_id', $input['project_id'])
+                    ->findOrFail($input['project_task_id']);
 
                 $task_timelog_html = View::make('project::task.partials.time_log_table_body')
-                ->with(compact('project_task'))
-                ->render();
+                    ->with(compact('project_task'))
+                    ->render();
             }
 
             $output = [
@@ -203,7 +206,7 @@ class ProjectTimeLogController extends Controller
                 'msg' => __('lang_v1.success')
             ];
         } catch (Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
                 'success' => false,
@@ -258,15 +261,15 @@ class ProjectTimeLogController extends Controller
     {
         try {
             $input = $request->only('note', 'project_task_id');
-            
+
             if (!empty($request->input('start_datetime'))) {
                 $input['start_datetime'] = $this->commonUtil->uf_date($request->input('start_datetime'), true);
             }
-            
+
             if (!empty($request->input('end_datetime'))) {
                 $input['end_datetime'] = $this->commonUtil->uf_date($request->input('end_datetime'), true);
             }
-            
+
             //check if time log is creating by admin/lead
             $business_id = request()->session()->get('user.business_id');
             $is_admin = $this->commonUtil->is_admin(auth()->user(), $business_id);
@@ -289,7 +292,7 @@ class ProjectTimeLogController extends Controller
                 'msg' => __('lang_v1.success')
             ];
         } catch (Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
                 'success' => false,
@@ -315,7 +318,7 @@ class ProjectTimeLogController extends Controller
                 'msg' => __('lang_v1.success')
             ];
         } catch (Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
                 'success' => false,

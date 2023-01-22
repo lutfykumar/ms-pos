@@ -4,9 +4,10 @@ namespace Modules\Essentials\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class PayrollNotification extends Notification
+class PayrollNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -34,7 +35,7 @@ class PayrollNotification extends Notification
         if (isPusherEnabled()) {
             $channels[] = 'broadcast';
         }
-        
+
         return $channels;
     }
 
@@ -79,7 +80,7 @@ class PayrollNotification extends Notification
         $transaction_date = \Carbon::parse($this->payroll->transaction_date);
         $month = \Carbon::createFromFormat('m', $transaction_date->format('m'))->format('F');
         if ($this->payroll->action == 'created') {
-            $msg = __('essentials::lang.payroll_added_notification', ['month_year' => $month . '/' . $transaction_date->format('Y') , 'ref_no' => $this->payroll->ref_no , 'created_by' => $this->payroll->sales_person->user_full_name]);
+            $msg = __('essentials::lang.payroll_added_notification', ['month_year' => $month . '/' . $transaction_date->format('Y'), 'ref_no' => $this->payroll->ref_no, 'created_by' => $this->payroll->sales_person->user_full_name]);
             $title = __('essentials::lang.payroll_added');
         } elseif ($this->payroll->action == 'updated') {
             $msg = __('essentials::lang.payroll_updated_notification', ['month_year' => $month . '/' . $transaction_date->format('Y'), 'ref_no' => $this->payroll->ref_no, 'created_by' => $this->payroll->sales_person->user_full_name]);

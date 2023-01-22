@@ -11,6 +11,7 @@ class TransactionPaymentDeleted
     public $transactionPaymentId;
 
     public $accountId;
+    protected $transactionPayment;
 
     /**
      * Create a new event instance.

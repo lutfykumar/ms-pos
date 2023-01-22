@@ -3,14 +3,16 @@
 namespace Modules\Project\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\BroadcastMessage;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class NewCommentOnTaskNotification extends Notification
+class NewCommentOnTaskNotification extends Notification implements ShouldQueue
 {
     use Queueable;
-
+    protected $project_task;
+    protected $project_comment;
     /**
      * Create a new notification instance.
      *
@@ -34,7 +36,7 @@ class NewCommentOnTaskNotification extends Notification
         if (isPusherEnabled()) {
             $channels[] = 'broadcast';
         }
-        
+
         return $channels;
     }
 
@@ -47,9 +49,9 @@ class NewCommentOnTaskNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', 'https://laravel.com')
-                    ->line('Thank you for using our application!');
+            ->line('The introduction to the notification.')
+            ->action('Notification Action', 'https://laravel.com')
+            ->line('Thank you for using our application!');
     }
 
     /**

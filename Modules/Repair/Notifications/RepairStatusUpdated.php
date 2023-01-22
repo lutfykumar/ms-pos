@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class RepairStatusUpdated extends Notification
+class RepairStatusUpdated extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -42,11 +42,11 @@ class RepairStatusUpdated extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->subject($this->notification_data['subject'])
-                    ->view(
-                        'emails.plain_html',
-                        ['content' => $this->notification_data['body']]
-                    );
+            ->subject($this->notification_data['subject'])
+            ->view(
+                'emails.plain_html',
+                ['content' => $this->notification_data['body']]
+            );
     }
 
     /**

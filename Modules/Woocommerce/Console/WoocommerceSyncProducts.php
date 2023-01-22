@@ -2,15 +2,17 @@
 
 namespace Modules\Woocommerce\Console;
 
+use App\Business;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Modules\Woocommerce\Utils\WoocommerceUtil;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
-use Modules\Woocommerce\Utils\WoocommerceUtil;
-use App\Business;
-use DB;
 
 class WoocommerceSyncProducts extends Command
 {
+    protected $woocommerceUtil;
     /**
      * The console command name.
      *
@@ -71,7 +73,7 @@ class WoocommerceSyncProducts extends Command
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
         }
     }
 

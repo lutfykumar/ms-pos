@@ -2,20 +2,22 @@
 
 namespace Modules\Crm\Http\Controllers;
 
-use App\Contact;
-use App\Http\Controllers\Controller;
 use App\User;
-use App\Utils\ModuleUtil;
-use App\Utils\Util;
+use Exception;
+use App\Contact;
 use Carbon\Carbon;
-use DB;
+use App\Utils\Util;
+use App\Transaction;
+use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
+use Modules\Crm\Utils\CrmUtil;
+use Illuminate\Support\Facades\DB;
+use Modules\Crm\Entities\Schedule;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\View;
 use Modules\Crm\Entities\CrmContact;
-use Modules\Crm\Entities\Schedule;
 use Yajra\DataTables\Facades\DataTables;
-use Modules\Crm\Utils\CrmUtil;
-use App\Transaction;
 
 class ScheduleController extends Controller
 {
@@ -26,6 +28,7 @@ class ScheduleController extends Controller
     protected $commonUtil;
     protected $moduleUtil;
     protected $crmUtil;
+    protected $status_bg;
     /**
      * Constructor
      *
@@ -63,11 +66,21 @@ class ScheduleController extends Controller
 
         if (request()->ajax()) {
             $schedules = Schedule::leftjoin('contacts', 'crm_schedules.contact_id', '=', 'contacts.id')
-                        ->leftjoin('users as U', 'crm_schedules.created_by', '=', 'U.id')
-                        ->with(['users'])
-                        ->where('crm_schedules.business_id', $business_id)
-                        ->select('crm_schedules.*', 'contacts.name as contact', 'contacts.supplier_business_name as biz_name',
-                        'U.surname', 'U.first_name', 'U.last_name', 'crm_schedules.status as status', 'crm_schedules.created_at as added_on', 'contacts.type as contact_type', 'contacts.id as contact_id');
+                ->leftjoin('users as U', 'crm_schedules.created_by', '=', 'U.id')
+                ->with(['users'])
+                ->where('crm_schedules.business_id', $business_id)
+                ->select(
+                    'crm_schedules.*',
+                    'contacts.name as contact',
+                    'contacts.supplier_business_name as biz_name',
+                    'U.surname',
+                    'U.first_name',
+                    'U.last_name',
+                    'crm_schedules.status as status',
+                    'crm_schedules.created_at as added_on',
+                    'contacts.type as contact_type',
+                    'contacts.id as contact_id'
+                );
 
             if (request()->input('is_recursive') == 1) {
                 $schedules->where('crm_schedules.is_recursive', 1);
@@ -81,9 +94,9 @@ class ScheduleController extends Controller
 
             if (!empty(request()->input('assgined_to'))) {
                 $user_id = request()->input('assgined_to');
-                $schedules->whereHas('users', function($q) use ($user_id){
-                        $q->where('user_id', $user_id);
-                    });
+                $schedules->whereHas('users', function ($q) use ($user_id) {
+                    $q->where('user_id', $user_id);
+                });
             }
 
             if (!empty(request()->input('status'))) {
@@ -103,44 +116,44 @@ class ScheduleController extends Controller
             if (!empty(request()->input('follow_up_by'))) {
                 $schedules->where('crm_schedules.follow_up_by', request()->input('follow_up_by'));
             }
-            
+
             if (!auth()->user()->can('superadmin') && !$can_access_all_schedule) {
                 $user_id = auth()->user()->id;
-                $schedules->whereHas('users', function($q) use ($user_id){
+                $schedules->whereHas('users', function ($q) use ($user_id) {
                     $q->where('user_id', $user_id);
                 });
             }
-            
+
             return Datatables::of($schedules)
                 ->addColumn('action', function ($row) {
                     $html = '<div class="btn-group">
                                 <button class="btn btn-info dropdown-toggle btn-xs" type="button"  data-toggle="dropdown" aria-expanded="false">
-                                    '. __("messages.action").'
+                                    ' . __("messages.action") . '
                                     <span class="caret"></span>
                                     <span class="sr-only">'
-                                       . __("messages.action").'
+                        . __("messages.action") . '
                                     </span>
                                 </button>
                                   <ul class="dropdown-menu dropdown-menu-left" role="menu">
                                    <li>
                                         <a href="' . action('\Modules\Crm\Http\Controllers\ScheduleController@show', ['follow_up' => $row->id]) . '" class="cursor-pointer view_schedule">
                                             <i class="fa fa-eye"></i>
-                                            '.__("messages.view").'
+                                            ' . __("messages.view") . '
                                         </a>
                                     </li>';
-                            if ($row->is_recursive != 1) {
-                                $html .= '<li>
+                    if ($row->is_recursive != 1) {
+                        $html .= '<li>
                                         <a data-href="' . action('\Modules\Crm\Http\Controllers\ScheduleController@edit', ['follow_up' => $row->id]) . '"class="cursor-pointer schedule_edit">
                                             <i class="fa fa-edit"></i>
-                                            '.__("messages.edit").'
+                                            ' . __("messages.edit") . '
                                         </a>
                                     </li>';
-                            }
+                    }
 
-                            $html .= '<li>
+                    $html .= '<li>
                                         <a data-href="' . action('\Modules\Crm\Http\Controllers\ScheduleController@destroy', ['follow_up' => $row->id]) . '" class="cursor-pointer schedule_delete">
                                             <i class="fas fa-trash"></i>
-                                            '.__("messages.delete").'
+                                            ' . __("messages.delete") . '
                                         </a>
                                     </li>';
 
@@ -169,15 +182,15 @@ class ScheduleController extends Controller
                         </a>
                     @endif
                 ')
-                ->addColumn('added_by', function($row) {
+                ->addColumn('added_by', function ($row) {
                     return "{$row->surname} {$row->first_name} {$row->last_name}";
                 })
-                ->addColumn('additional_info', function($row) {
+                ->addColumn('additional_info', function ($row) {
                     $html = '';
                     $infos = $row->followup_additional_info;
                     if (!empty($infos)) {
                         foreach ($infos as $key => $value) {
-                            $html .= $key .' : '.$value.'<br>';
+                            $html .= $key . ' : ' . $value . '<br>';
                         }
                     }
                     return $html;
@@ -185,12 +198,12 @@ class ScheduleController extends Controller
                 ->editColumn('added_on', '
                     {{@format_datetime($added_on)}}
                 ')
-                ->editColumn('schedule_type', function($row) {
+                ->editColumn('schedule_type', function ($row) {
                     $html = '';
                     if (!empty($row->schedule_type)) {
-                        $html = '<div class="schedule_type" data-orig-value="'.__('crm::lang.'.$row->schedule_type).'" data-status-name="'.__('crm::lang.'.$row->schedule_type). '">
-                                    '.__('crm::lang.'.$row->schedule_type).
-                                '</div>';
+                        $html = '<div class="schedule_type" data-orig-value="' . __('crm::lang.' . $row->schedule_type) . '" data-status-name="' . __('crm::lang.' . $row->schedule_type) . '">
+                                    ' . __('crm::lang.' . $row->schedule_type) .
+                            '</div>';
                     }
                     return $html;
                 })
@@ -199,37 +212,39 @@ class ScheduleController extends Controller
                     if ($row->users->count() > 0) {
                         foreach ($row->users as $user) {
                             if (isset($user->media->display_url)) {
-                                $html .= '<img class="user_avatar" src="'.$user->media->display_url.'" data-toggle="tooltip" title="'.$user->user_full_name.'">';
+                                $html .= '<img class="user_avatar" src="' . $user->media->display_url . '" data-toggle="tooltip" title="' . $user->user_full_name . '">';
                             } else {
-                                $html .= '<img class="user_avatar" src="https://ui-avatars.com/api/?name='.$user->first_name.'" data-toggle="tooltip" title="'.$user->user_full_name.'">';
+                                $html .= '<img class="user_avatar" src="https://ui-avatars.com/api/?name=' . $user->first_name . '" data-toggle="tooltip" title="' . $user->user_full_name . '">';
                             }
                         }
                     }
                     return $html;
                 })
-                ->editColumn('status', function($row) {
+                ->editColumn('status', function ($row) {
                     $html = '';
                     if (!empty($row->status)) {
-                        $html = '<span class="text-center label status '.$this->status_bg[$row->status].'" data-orig-value="'.__('crm::lang.'.$row->status).'" data-status-name="'.__('crm::lang.'.$row->status). '"><small>
-                                    '.__('crm::lang.'.$row->status).
-                                '</small></span>';
+                        $html = '<span class="text-center label status ' . $this->status_bg[$row->status] . '" data-orig-value="' . __('crm::lang.' . $row->status) . '" data-status-name="' . __('crm::lang.' . $row->status) . '"><small>
+                                    ' . __('crm::lang.' . $row->status) .
+                            '</small></span>';
                     }
                     return $html;
                 })
-                ->editColumn('follow_up_by', function($row) {
+                ->editColumn('follow_up_by', function ($row) {
                     $follow_up_by = '';
 
                     if ($row->follow_up_by == 'payment_status') {
                         $follow_up_by = __('sale.payment_status') . ' - ' . __('lang_v1.' . $row->follow_up_by_value);
-                    }  elseif ($row->follow_up_by == 'orders') {
+                    } elseif ($row->follow_up_by == 'orders') {
                         $follow_up_by = __('restaurant.orders') . ' - ' . __('crm::lang.has_no_transactions');
                     }
 
                     return $follow_up_by;
                 })
                 ->removeColumn('id')
-                ->rawColumns(['action', 'start_datetime', 'end_datetime', 'users', 'contact', 'added_on',
-                    'additional_info', 'schedule_type', 'status', 'description'])
+                ->rawColumns([
+                    'action', 'start_datetime', 'end_datetime', 'users', 'contact', 'added_on',
+                    'additional_info', 'schedule_type', 'status', 'description'
+                ])
                 ->make(true);
         }
 
@@ -283,7 +298,7 @@ class ScheduleController extends Controller
         }
 
         return view('crm::schedule.create_advance_follow_up')
-                ->with(compact('statuses', 'schedule_for', 'follow_up_types', 'notify_type', 'followup_tags', 'customers'));
+            ->with(compact('statuses', 'schedule_for', 'follow_up_types', 'notify_type', 'followup_tags', 'customers'));
     }
 
     /**
@@ -319,18 +334,18 @@ class ScheduleController extends Controller
             $schedule_for = request()->get('schedule_for', 'customer');
 
             $output = [
-                    'success' => true,
-                    'msg' => __('lang_v1.success'),
-                    'schedule_for' => $schedule_for
-                ];
+                'success' => true,
+                'msg' => __('lang_v1.success'),
+                'schedule_for' => $schedule_for
+            ];
         } catch (Exception $e) {
             DB::rollBack();
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
-                    'success' => false,
-                    'msg' => __('messages.something_went_wrong')
-                ];
+                'success' => false,
+                'msg' => __('messages.something_went_wrong')
+            ];
         }
 
         if (request()->ajax()) {
@@ -357,11 +372,11 @@ class ScheduleController extends Controller
         }
 
         $query = Schedule::with(['customer', 'users', 'invoices', 'invoices.payment_lines'])
-                        ->where('business_id', $business_id);
+            ->where('business_id', $business_id);
 
         if (!$can_access_all_schedule && $can_access_own_schedule) {
-            $query->where( function($qry) {
-                $qry->whereHas('users', function($q){
+            $query->where(function ($qry) {
+                $qry->whereHas('users', function ($q) {
                     $q->where('user_id', auth()->user()->id);
                 })->orWhere('created_by', auth()->user()->id);
             });
@@ -389,11 +404,11 @@ class ScheduleController extends Controller
         }
 
         $query = Schedule::with(['customer', 'users'])
-                        ->where('business_id', $business_id);
+            ->where('business_id', $business_id);
 
         if (!$can_access_all_schedule && $can_access_own_schedule) {
-            $query->where( function($qry) {
-                $qry->whereHas('users', function($q){
+            $query->where(function ($qry) {
+                $qry->whereHas('users', function ($q) {
                     $q->where('user_id', auth()->user()->id);
                 })->orWhere('created_by', auth()->user()->id);
             });
@@ -445,21 +460,21 @@ class ScheduleController extends Controller
             $request['end_datetime'] = $this->commonUtil->uf_date($request['end_datetime'], true);
 
             $this->crmUtil->updateFollowUp($id, $request, \Auth::user());
-            
+
             $schedule_for = request()->get('schedule_for', 'customer');
 
             $output = [
-                    'success' => true,
-                    'msg' => __('lang_v1.success'),
-                    'schedule_for' => $schedule_for
-                ];
+                'success' => true,
+                'msg' => __('lang_v1.success'),
+                'schedule_for' => $schedule_for
+            ];
         } catch (Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
-                    'success' => false,
-                    'msg' => __('messages.something_went_wrong')
-                ];
+                'success' => false,
+                'msg' => __('messages.something_went_wrong')
+            ];
         }
 
         return $output;
@@ -486,8 +501,8 @@ class ScheduleController extends Controller
                 $query = Schedule::where('business_id', $business_id);
 
                 if (!$can_access_all_schedule && $can_access_own_schedule) {
-                    $query->where( function($qry) {
-                        $qry->whereHas('users', function($q){
+                    $query->where(function ($qry) {
+                        $qry->whereHas('users', function ($q) {
                             $q->where('user_id', auth()->user()->id);
                         })->orWhere('created_by', auth()->user()->id);
                     });
@@ -504,7 +519,7 @@ class ScheduleController extends Controller
                     'view_type' => $view_type
                 ];
             } catch (Exception $e) {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
                 $output = [
                     'success' => false,
@@ -535,15 +550,15 @@ class ScheduleController extends Controller
             $schedules = $query->get();
 
             $schedule_html = View::make('crm::schedule.partial.today_schedule')
-                        ->with(compact('schedules'))
-                        ->render();
+                ->with(compact('schedules'))
+                ->render();
             $output = [
                 'success' => true,
                 'msg' => __('lang_v1.success'),
                 'todays_schedule' => $schedule_html
             ];
         } catch (Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
                 'success' => false,
@@ -562,37 +577,37 @@ class ScheduleController extends Controller
 
         $lead_id = $request->get('lead_id');
         $schedules = Schedule::with('users')
-                        ->where('business_id', $business_id)
-                        ->where('contact_id', $lead_id)
-                        ->select('*');
+            ->where('business_id', $business_id)
+            ->where('contact_id', $lead_id)
+            ->select('*');
 
         return Datatables::of($schedules)
             ->addColumn('action', function ($row) {
                 $html = '<div class="btn-group">
                             <button class="btn btn-info dropdown-toggle btn-xs" type="button"  data-toggle="dropdown" aria-expanded="false">
-                                '. __("messages.action").'
+                                ' . __("messages.action") . '
                                 <span class="caret"></span>
                                 <span class="sr-only">'
-                                   . __("messages.action").'
+                    . __("messages.action") . '
                                 </span>
                             </button>
                               <ul class="dropdown-menu dropdown-menu-left" role="menu">
                                <li>
                                     <a href="' . action('\Modules\Crm\Http\Controllers\ScheduleController@show', ['follow_up' => $row->id]) . '" class="cursor-pointer view_schedule">
                                         <i class="fa fa-eye"></i>
-                                        '.__("messages.view").'
+                                        ' . __("messages.view") . '
                                     </a>
                                 </li>
                                 <li>
                                     <a data-href="' . action('\Modules\Crm\Http\Controllers\ScheduleController@edit', ['follow_up' => $row->id]) . '?schedule_for=lead"class="cursor-pointer schedule_edit">
                                         <i class="fa fa-edit"></i>
-                                        '.__("messages.edit").'
+                                        ' . __("messages.edit") . '
                                     </a>
                                 </li>
                                 <li>
                                     <a data-href="' . action('\Modules\Crm\Http\Controllers\ScheduleController@destroy', ['follow_up' => $row->id]) . '" class="cursor-pointer schedule_delete">
                                         <i class="fas fa-trash"></i>
-                                        '.__("messages.delete").'
+                                        ' . __("messages.delete") . '
                                     </a>
                                 </li>';
 
@@ -611,9 +626,9 @@ class ScheduleController extends Controller
                 $html = '&nbsp;';
                 foreach ($row->users as $user) {
                     if (isset($user->media->display_url)) {
-                        $html .= '<img class="user_avatar" src="'.$user->media->display_url.'" data-toggle="tooltip" title="'.$user->user_full_name.'">';
+                        $html .= '<img class="user_avatar" src="' . $user->media->display_url . '" data-toggle="tooltip" title="' . $user->user_full_name . '">';
                     } else {
-                        $html .= '<img class="user_avatar" src="https://ui-avatars.com/api/?name='.$user->first_name.'" data-toggle="tooltip" title="'.$user->user_full_name.'">';
+                        $html .= '<img class="user_avatar" src="https://ui-avatars.com/api/?name=' . $user->first_name . '" data-toggle="tooltip" title="' . $user->user_full_name . '">';
                     }
                 }
 
@@ -636,9 +651,9 @@ class ScheduleController extends Controller
         $payment_status = request()->input('payment_status');
 
         $query = Transaction::with(['contact'])
-                            ->where('business_id', $business_id)
-                            ->where('type', 'sell')
-                            ->where('status', 'final');
+            ->where('business_id', $business_id)
+            ->where('type', 'sell')
+            ->where('status', 'final');
 
         if ($follow_up_by == 'payment_status') {
             if ($payment_status == 'all') {
@@ -659,14 +674,14 @@ class ScheduleController extends Controller
 
         foreach ($sells as $sell) {
             $payment_status = Transaction::getPaymentStatus($sell);
-            $contact = ' - '.$sell->contact->name;
+            $contact = ' - ' . $sell->contact->name;
             if (!empty($sell->contact->supplier_business_name)) {
-                $contact = ' - ' .$sell->contact->supplier_business_name . $contact;
+                $contact = ' - ' . $sell->contact->supplier_business_name . $contact;
             }
 
             $sells_array[] = [
                 'id' => $sell->id,
-                'text' => $sell->invoice_no . ' (' . __('lang_v1.' . $payment_status) . $contact .')'
+                'text' => $sell->invoice_no . ' (' . __('lang_v1.' . $payment_status) . $contact . ')'
             ];
         }
 
@@ -687,12 +702,12 @@ class ScheduleController extends Controller
         if ($follow_up_by == 'payment_status') {
             $invoices = request()->input('invoices');
             $sells = Transaction::where('business_id', $business_id)
-                            ->where('type', 'sell')
-                            ->where('status', 'final')
-                            ->whereIn('id', $invoices)
-                            ->with(['contact'])
-                            ->select('id', 'invoice_no', 'contact_id')
-                            ->get();
+                ->where('type', 'sell')
+                ->where('status', 'final')
+                ->whereIn('id', $invoices)
+                ->with(['contact'])
+                ->select('id', 'invoice_no', 'contact_id')
+                ->get();
 
             $sells_by_customer = [];
 
@@ -705,18 +720,18 @@ class ScheduleController extends Controller
         } elseif ($follow_up_by == 'contact_name') {
             $contact_ids = request()->input('contact_ids');
             $customers = Contact::where('contacts.business_id', $business_id)
-                            ->whereIn('id', $contact_ids)
-                            ->get();
+                ->whereIn('id', $contact_ids)
+                ->get();
 
             return view('crm::schedule.partial.group_customers')
                 ->with(compact('customers', 'users'));
         } else {
             $days = request()->input('days');
 
-            $from_transaction_date = \Carbon::now()->subDays($days)->format('Y-m-d');
+            $from_transaction_date = Carbon::now()->subDays($days)->format('Y-m-d');
             $query = Contact::where('contacts.business_id', $business_id)
-                            ->OnlyCustomers()
-                            ->leftJoin('transactions as t', 't.contact_id', '=', 'contacts.id');
+                ->OnlyCustomers()
+                ->leftJoin('transactions as t', 't.contact_id', '=', 'contacts.id');
 
             if ($follow_up_by == 'has_transactions') {
                 $query->whereNotNull('t.id')
@@ -725,18 +740,16 @@ class ScheduleController extends Controller
 
             if ($follow_up_by == 'has_no_transactions') {
                 $query->havingRaw("MAX(DATE(transaction_date)) < '{$from_transaction_date}'")
-                     ->orHavingRaw('transaction_date IS NULL');
+                    ->orHavingRaw('transaction_date IS NULL');
             }
 
             $customers = $query->select('contacts.*', 'transaction_date')
-                            ->groupBy('contacts.id')
-                            ->get();
+                ->groupBy('contacts.id')
+                ->get();
 
             return view('crm::schedule.partial.group_customers')
                 ->with(compact('customers', 'users'));
         }
-        
-
     }
 
     public function getCustomerDropdown($business_id)

@@ -7,9 +7,10 @@ use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
-use Modules\Essentials\Entities\EssentialsAllowanceAndDeduction;
-use Modules\Essentials\Utils\EssentialsUtil;
+use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
+use Modules\Essentials\Utils\EssentialsUtil;
+use Modules\Essentials\Entities\EssentialsAllowanceAndDeduction;
 
 class EssentialsAllowanceAndDeductionController extends Controller
 {
@@ -120,15 +121,17 @@ class EssentialsAllowanceAndDeductionController extends Controller
             $allowance = EssentialsAllowanceAndDeduction::create($input);
             $allowance->employees()->sync($request->input('employees'));
 
-            $output = ['success' => true,
-                        'msg' => __("lang_v1.added_success")
-                    ];
+            $output = [
+                'success' => true,
+                'msg' => __("lang_v1.added_success")
+            ];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => false,
-                        'msg' => "File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage()
-                    ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => false,
+                'msg' => "File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage()
+            ];
         }
 
         return $output;
@@ -162,8 +165,8 @@ class EssentialsAllowanceAndDeductionController extends Controller
         }
 
         $allowance = EssentialsAllowanceAndDeduction::where('business_id', $business_id)
-                    ->with('employees')
-                    ->findOrFail($id);
+            ->with('employees')
+            ->findOrFail($id);
         $users = User::forDropdown($business_id, false);
 
         $selected_users = [];
@@ -174,7 +177,7 @@ class EssentialsAllowanceAndDeductionController extends Controller
         $applicable_date = !empty($allowance->applicable_date) ? $this->essentialsUtil->format_date($allowance->applicable_date) : null;
 
         return view('essentials::allowance_deduction.edit')
-                ->with(compact('allowance', 'users', 'selected_users', 'applicable_date'));
+            ->with(compact('allowance', 'users', 'selected_users', 'applicable_date'));
     }
 
     /**
@@ -199,15 +202,17 @@ class EssentialsAllowanceAndDeductionController extends Controller
 
             $allowance->employees()->sync($request->input('employees'));
 
-            $output = ['success' => true,
-                        'msg' => __("lang_v1.updated_success")
-                    ];
+            $output = [
+                'success' => true,
+                'msg' => __("lang_v1.updated_success")
+            ];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => false,
-                        'msg' => "File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage()
-                    ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => false,
+                'msg' => "File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage()
+            ];
         }
 
         return $output;
@@ -228,18 +233,20 @@ class EssentialsAllowanceAndDeductionController extends Controller
         if (request()->ajax()) {
             try {
                 EssentialsAllowanceAndDeduction::where('business_id', $business_id)
-                            ->where('id', $id)
-                            ->delete();
+                    ->where('id', $id)
+                    ->delete();
 
-                $output = ['success' => true,
-                            'msg' => __("lang_v1.deleted_success")
-                        ];
+                $output = [
+                    'success' => true,
+                    'msg' => __("lang_v1.deleted_success")
+                ];
             } catch (\Exception $e) {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-                $output = ['success' => false,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
+                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+                $output = [
+                    'success' => false,
+                    'msg' => __("messages.something_went_wrong")
+                ];
             }
 
             return $output;

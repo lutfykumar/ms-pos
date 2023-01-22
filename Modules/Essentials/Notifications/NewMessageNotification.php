@@ -4,9 +4,10 @@ namespace Modules\Essentials\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class NewMessageNotification extends Notification
+class NewMessageNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -34,7 +35,7 @@ class NewMessageNotification extends Notification
         if (isPusherEnabled()) {
             $channels[] = 'broadcast';
         }
-        
+
         return $channels;
     }
 
@@ -72,7 +73,7 @@ class NewMessageNotification extends Notification
     {
         return new BroadcastMessage([
             'title' => __('essentials::lang.new_message'),
-            'body' => strip_tags(__('essentials::lang.new_message_notification', ['sender' => $this->message->sender->user_full_name]) ),
+            'body' => strip_tags(__('essentials::lang.new_message_notification', ['sender' => $this->message->sender->user_full_name])),
             'link' => action('\Modules\Essentials\Http\Controllers\EssentialsMessageController@index')
         ]);
     }

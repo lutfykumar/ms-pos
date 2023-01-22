@@ -2,13 +2,15 @@
 
 namespace Modules\Essentials\Http\Controllers;
 
+use Carbon\Carbon;
 use App\BusinessLocation;
 use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
-use Modules\Essentials\Entities\EssentialsHoliday;
+use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
+use Modules\Essentials\Entities\EssentialsHoliday;
 
 class EssentialsHolidayController extends Controller
 {
@@ -45,15 +47,15 @@ class EssentialsHolidayController extends Controller
 
         if (request()->ajax()) {
             $holidays = EssentialsHoliday::where('essentials_holidays.business_id', $business_id)
-                        ->leftJoin('business_locations as bl', 'bl.id', '=', 'essentials_holidays.location_id')
-                        ->select([
-                            'essentials_holidays.id',
-                            'essentials_holidays.name',
-                            'bl.name as location',
-                            'start_date',
-                            'end_date',
-                            'note'
-                        ]);
+                ->leftJoin('business_locations as bl', 'bl.id', '=', 'essentials_holidays.location_id')
+                ->select([
+                    'essentials_holidays.id',
+                    'essentials_holidays.name',
+                    'bl.name as location',
+                    'start_date',
+                    'end_date',
+                    'note'
+                ]);
 
             $permitted_locations = auth()->user()->permitted_locations();
             if ($permitted_locations != 'all') {
@@ -71,7 +73,7 @@ class EssentialsHolidayController extends Controller
                 $start = request()->start_date;
                 $end =  request()->end_date;
                 $holidays->whereDate('essentials_holidays.start_date', '>=', $start)
-                            ->whereDate('essentials_holidays.start_date', '<=', $end);
+                    ->whereDate('essentials_holidays.start_date', '<=', $end);
             }
 
             return Datatables::of($holidays)
@@ -91,14 +93,14 @@ class EssentialsHolidayController extends Controller
                 )
                 ->editColumn('location', '{{$location ?? __("lang_v1.all")}}')
                 ->editColumn('start_date', function ($row) {
-                    $start_date = \Carbon::parse($row->start_date);
-                    $end_date = \Carbon::parse($row->end_date);
+                    $start_date = Carbon::parse($row->start_date);
+                    $end_date = Carbon::parse($row->end_date);
 
                     $diff = $start_date->diffInDays($end_date);
                     $diff += 1;
                     $start_date_formated = $this->moduleUtil->format_date($start_date);
                     $end_date_formated = $this->moduleUtil->format_date($end_date);
-                    return $start_date_formated . ' - ' . $end_date_formated . ' (' . $diff . \Str::plural(__('lang_v1.day'), $diff).')';
+                    return $start_date_formated . ' - ' . $end_date_formated . ' (' . $diff . \Str::plural(__('lang_v1.day'), $diff) . ')';
                 })
                 ->removeColumn('id')
                 ->rawColumns(['action'])
@@ -150,15 +152,17 @@ class EssentialsHolidayController extends Controller
             $input['business_id'] = $business_id;
 
             EssentialsHoliday::create($input);
-            $output = ['success' => true,
-                            'msg' => __("lang_v1.added_success")
-                        ];
+            $output = [
+                'success' => true,
+                'msg' => __("lang_v1.added_success")
+            ];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => false,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => false,
+                'msg' => __("messages.something_went_wrong")
+            ];
         }
 
         return $output;
@@ -187,7 +191,7 @@ class EssentialsHolidayController extends Controller
         }
 
         $holiday = EssentialsHoliday::where('business_id', $business_id)
-                                    ->findOrFail($id);
+            ->findOrFail($id);
 
         $locations = BusinessLocation::forDropdown($business_id);
 
@@ -215,18 +219,20 @@ class EssentialsHolidayController extends Controller
             $input['end_date'] = $this->moduleUtil->uf_date($input['end_date']);
 
             EssentialsHoliday::where('business_id', $business_id)
-                        ->where('id', $id)
-                        ->update($input);
+                ->where('id', $id)
+                ->update($input);
 
-            $output = ['success' => true,
-                            'msg' => __("lang_v1.updated_success")
-                        ];
+            $output = [
+                'success' => true,
+                'msg' => __("lang_v1.updated_success")
+            ];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => false,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => false,
+                'msg' => __("messages.something_went_wrong")
+            ];
         }
 
         return $output;
@@ -247,18 +253,20 @@ class EssentialsHolidayController extends Controller
 
         try {
             EssentialsHoliday::where('business_id', $business_id)
-                        ->where('id', $id)
-                        ->delete();
+                ->where('id', $id)
+                ->delete();
 
-            $output = ['success' => true,
-                            'msg' => __("lang_v1.deleted_success")
-                        ];
+            $output = [
+                'success' => true,
+                'msg' => __("lang_v1.deleted_success")
+            ];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => false,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => false,
+                'msg' => __("messages.something_went_wrong")
+            ];
         }
 
         return $output;

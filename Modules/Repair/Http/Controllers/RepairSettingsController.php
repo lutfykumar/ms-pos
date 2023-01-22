@@ -2,17 +2,18 @@
 
 namespace Modules\Repair\Http\Controllers;
 
-use App\Barcode;
 use App\Brands;
+use App\Barcode;
 use App\Business;
 use App\Category;
-use App\Utils\ModuleUtil;
 use App\Variation;
+use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
-use Modules\Repair\Entities\RepairStatus;
+use Illuminate\Support\Facades\Log;
 use Modules\Repair\Utils\RepairUtil;
+use Modules\Repair\Entities\RepairStatus;
 
 class RepairSettingsController extends Controller
 {
@@ -49,16 +50,16 @@ class RepairSettingsController extends Controller
         }
 
         $barcode_settings = Barcode::where('business_id', $business_id)
-                                ->orWhereNull('business_id')
-                                ->pluck('name', 'id');
+            ->orWhereNull('business_id')
+            ->pluck('name', 'id');
 
         $repair_settings = $this->repairUtil->getRepairSettings($business_id);
 
         $default_product_name = __('repair::lang.no_default_product_selected');
         if (!empty($repair_settings['default_product'])) {
             $default_product = Variation::where('id', $repair_settings['default_product'])
-                        ->with(['product_variation', 'product'])
-                        ->first();
+                ->with(['product_variation', 'product'])
+                ->first();
 
             $default_product_name = $default_product->product->type == 'single' ? $default_product->product->name . ' - ' . $default_product->product->sku : $default_product->product->name . ' (' . $default_product->name . ') - ' . $default_product->sub_sku;
         }
@@ -72,7 +73,7 @@ class RepairSettingsController extends Controller
         $module_category_data = $this->moduleUtil->getTaxonomyData('device');
 
         return view('repair::settings.index')
-                ->with(compact('barcode_settings', 'repair_settings', 'default_product_name', 'barcode_types', 'repair_statuses', 'brands', 'devices', 'module_category_data'));
+            ->with(compact('barcode_settings', 'repair_settings', 'default_product_name', 'barcode_types', 'repair_statuses', 'brands', 'devices', 'module_category_data'));
     }
 
     /**
@@ -99,17 +100,19 @@ class RepairSettingsController extends Controller
             }
 
             Business::where('id', $business_id)
-                        ->update(['repair_settings' => json_encode($input)]);
+                ->update(['repair_settings' => json_encode($input)]);
 
-            $output = ['success' => true,
-                            'msg' => __("lang_v1.updated_success")
-                        ];
+            $output = [
+                'success' => true,
+                'msg' => __("lang_v1.updated_success")
+            ];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => false,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => false,
+                'msg' => __("messages.something_went_wrong")
+            ];
         }
 
         return redirect()->back()->with(['status' => $output]);

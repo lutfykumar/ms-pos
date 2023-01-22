@@ -1,27 +1,29 @@
 <?php
+
 namespace Modules\Woocommerce\Utils;
 
-use App\Business;
-use App\Category;
 use App\Contact;
-use App\Exceptions\PurchaseSellMismatch;
 use App\Product;
 use App\TaxRate;
-use App\Transaction;
-use App\Utils\ProductUtil;
-
-use App\Utils\TransactionUtil;
-
+use App\Business;
+use App\Category;
+use Carbon\Carbon;
 use App\Utils\Util;
+use App\Transaction;
+
 use App\Utils\ContactUtil;
 
-use App\VariationLocationDetails;
+use App\Utils\ProductUtil;
 use App\VariationTemplate;
+
+use App\Utils\TransactionUtil;
+use App\VariationLocationDetails;
 use Automattic\WooCommerce\Client;
 
-use DB;
-use Modules\Woocommerce\Entities\WoocommerceSyncLog;
+use Illuminate\Support\Facades\DB;
+use App\Exceptions\PurchaseSellMismatch;
 
+use Modules\Woocommerce\Entities\WoocommerceSyncLog;
 use Modules\Woocommerce\Exceptions\WooCommerceError;
 
 class WoocommerceUtil extends Util
@@ -146,8 +148,8 @@ class WoocommerceUtil extends Util
 
         //Update parent categories
         $query = Category::where('business_id', $business_id)
-                        ->where('category_type', 'product')
-                        ->where('parent_id', 0);
+            ->where('category_type', 'product')
+            ->where('parent_id', 0);
 
         //Limit query to last sync
         if (!empty($last_synced)) {
@@ -185,8 +187,8 @@ class WoocommerceUtil extends Util
 
         //Sync child categories
         $query2 = Category::where('business_id', $business_id)
-                        ->where('category_type', 'product')
-                        ->where('parent_id', '!=', 0);
+            ->where('category_type', 'product')
+            ->where('parent_id', '!=', 0);
         //Limit query to last sync
         if (!empty($last_synced)) {
             $query2->where('updated_at', '>', $last_synced);
@@ -195,10 +197,10 @@ class WoocommerceUtil extends Util
         $child_categories = $query2->get();
 
         $cat_id_woocommerce_id = Category::where('business_id', $business_id)
-                                    ->where('parent_id', 0)
-                                    ->where('category_type', 'product')
-                                    ->pluck('woocommerce_cat_id', 'id')
-                                    ->toArray();
+            ->where('parent_id', 0)
+            ->where('category_type', 'product')
+            ->pluck('woocommerce_cat_id', 'id')
+            ->toArray();
 
         $category_data = [];
         $new_categories = [];
@@ -268,7 +270,7 @@ class WoocommerceUtil extends Util
         if ($page == 0) {
             session(['last_product_synced' => $last_synced]);
         }
-        
+
         $woocommerce_api_settings = $this->get_api_settings($business_id);
         $created_data = [];
         $updated_data = [];
@@ -276,18 +278,20 @@ class WoocommerceUtil extends Util
         $business_location_id = $woocommerce_api_settings->location_id;
         $offset = $page * $limit;
         $query = Product::where('business_id', $business_id)
-                        ->whereIn('type', ['single', 'variable'])
-                        ->where('woocommerce_disable_sync', 0)
-                        ->with(['variations', 'category', 'sub_category',
-                            'variations.variation_location_details',
-                            'variations.product_variation',
-                            'variations.product_variation.variation_template']);
+            ->whereIn('type', ['single', 'variable'])
+            ->where('woocommerce_disable_sync', 0)
+            ->with([
+                'variations', 'category', 'sub_category',
+                'variations.variation_location_details',
+                'variations.product_variation',
+                'variations.product_variation.variation_template'
+            ]);
 
         if ($limit > 0) {
             $query->limit($limit)
                 ->offset($offset);
         }
-                        
+
         if ($sync_type == 'new') {
             $query->whereNull('woocommerce_product_id');
         }
@@ -305,7 +309,7 @@ class WoocommerceUtil extends Util
         if (count($all_products) == 0) {
             request()->session()->forget('last_product_synced');
         }
-        
+
         foreach ($all_products as $product) {
             //Skip product if last updated is less than last sync
             $last_updated = $product->updated_at;
@@ -314,7 +318,7 @@ class WoocommerceUtil extends Util
 
             if (!empty($last_stock_updated)) {
                 $last_updated = strtotime($last_stock_updated) > strtotime($last_updated) ?
-                        $last_stock_updated : $last_updated;
+                    $last_stock_updated : $last_updated;
             }
             if (!empty($product->woocommerce_product_id) && !empty($last_synced) && strtotime($last_updated) < strtotime($last_synced)) {
                 continue;
@@ -389,7 +393,7 @@ class WoocommerceUtil extends Util
 
             if (empty($product->woocommerce_product_id)) {
                 $array['tax_class'] = !empty($woocommerce_api_settings->default_tax_class) ?
-                $woocommerce_api_settings->default_tax_class : 'standard';
+                    $woocommerce_api_settings->default_tax_class : 'standard';
 
                 //assign category
                 if (in_array('category', $woocommerce_api_settings->product_fields_for_create)) {
@@ -446,7 +450,7 @@ class WoocommerceUtil extends Util
                             }
                         }
                     }
-                    
+
                     $array['regular_price'] = $this->formatDecimalPoint($price);
                 }
 
@@ -593,7 +597,7 @@ class WoocommerceUtil extends Util
                     $new_product->save();
 
                     $new_woocommerce_product_ids[] = $new_product->woocommerce_product_id;
-                    $count ++;
+                    $count++;
                 }
             }
 
@@ -606,7 +610,7 @@ class WoocommerceUtil extends Util
                         $updated_product->save();
                     }
                     $new_woocommerce_product_ids[] = $updated_product->woocommerce_product_id;
-                    $count ++;
+                    $count++;
                 }
             }
         }
@@ -676,12 +680,14 @@ class WoocommerceUtil extends Util
         $woocommerce_api_settings = $this->get_api_settings($business_id);
 
         $query = Product::where('business_id', $business_id)
-                        ->where('type', 'variable')
-                        ->where('woocommerce_disable_sync', 0)
-                        ->with(['variations',
-                            'variations.variation_location_details',
-                            'variations.product_variation',
-                            'variations.product_variation.variation_template']);
+            ->where('type', 'variable')
+            ->where('woocommerce_disable_sync', 0)
+            ->with([
+                'variations',
+                'variations.variation_location_details',
+                'variations.product_variation',
+                'variations.product_variation.variation_template'
+            ]);
 
         $query->whereIn('woocommerce_product_id', $new_woocommerce_product_ids);
 
@@ -696,7 +702,7 @@ class WoocommerceUtil extends Util
 
             if (!empty($last_stock_updated)) {
                 $last_updated = strtotime($last_stock_updated) > strtotime($last_updated) ?
-                        $last_stock_updated : $last_updated;
+                    $last_stock_updated : $last_updated;
             }
             if (!empty($last_synced) && strtotime($last_updated) < strtotime($last_synced)) {
                 continue;
@@ -817,7 +823,7 @@ class WoocommerceUtil extends Util
                             $variation_arr['image'] = !empty($woocommerce_media_id) ? ['id' => $woocommerce_media_id] : ['src' => $url];
                         }
                     }
-                    
+
                     //assign price
                     if (in_array('price', $woocommerce_api_settings->product_fields_for_update)) {
                         $variation_arr['regular_price'] = $this->formatDecimalPoint($price);
@@ -827,7 +833,7 @@ class WoocommerceUtil extends Util
                     $updated_variations[] = $variation;
                 }
             }
-           
+
             if (!empty($variation_data)) {
                 $response = $woocommerce->post('products/' . $product->woocommerce_product_id . '/variations/batch', $variation_data);
 
@@ -878,11 +884,11 @@ class WoocommerceUtil extends Util
     {
         $last_synced = $this->getLastSync($business_id, 'orders', false);
         $orders = $this->getAllResponse($business_id, 'orders');
-        
+
         $woocommerce_sells = Transaction::where('business_id', $business_id)
-                                ->whereNotNull('woocommerce_order_id')
-                                ->with('sell_lines', 'sell_lines.product', 'payment_lines')
-                                ->get();
+            ->whereNotNull('woocommerce_order_id')
+            ->with('sell_lines', 'sell_lines.product', 'payment_lines')
+            ->get();
 
         $new_orders = [];
         $updated_orders = [];
@@ -891,7 +897,7 @@ class WoocommerceUtil extends Util
         $business = Business::find($business_id);
 
         $skipped_orders = !empty($business->woocommerce_skipped_orders) ? json_decode($business->woocommerce_skipped_orders, true) : [];
-        
+
         $business_data = [
             'id' => $business_id,
             'accounting_method' => $business->accounting_method,
@@ -1043,9 +1049,9 @@ class WoocommerceUtil extends Util
 
         foreach ($order->line_items as $product_line) {
             $product = Product::where('business_id', $business_id)
-                            ->where('woocommerce_product_id', $product_line->product_id)
-                            ->with(['variations'])
-                            ->first();
+                ->where('woocommerce_product_id', $product_line->product_id)
+                ->with(['variations'])
+                ->first();
 
             $unit_price = $product_line->total / $product_line->quantity;
             $line_tax = !empty($product_line->total_tax) ? $product_line->total_tax : 0;
@@ -1066,13 +1072,14 @@ class WoocommerceUtil extends Util
                 }
 
                 if (empty($variation)) {
-                    return ['has_error' =>
-                            [
-                                'error_type' => 'order_product_not_found',
-                                'order_number' => $order->number,
-                                'product' => $product_line->name . ' SKU:' . $product_line->sku
-                            ]
-                        ];
+                    return [
+                        'has_error' =>
+                        [
+                            'error_type' => 'order_product_not_found',
+                            'order_number' => $order->number,
+                            'product' => $product_line->name . ' SKU:' . $product_line->sku
+                        ]
+                    ];
                     exit;
                 }
 
@@ -1081,8 +1088,8 @@ class WoocommerceUtil extends Util
                 if (!empty($product_line->taxes)) {
                     foreach ($product_line->taxes as $tax) {
                         $pos_tax = TaxRate::where('business_id', $business_id)
-                        ->where('woocommerce_tax_rate_id', $tax->id)
-                        ->first();
+                            ->where('woocommerce_tax_rate_id', $tax->id)
+                            ->first();
 
                         if (!empty($pos_tax)) {
                             $tax_id = $pos_tax->id;
@@ -1102,12 +1109,14 @@ class WoocommerceUtil extends Util
                     'tax_id' => $tax_id,
                     'line_item_id' => $product_line->id
                 ];
-                
+
                 //append transaction_sell_lines_id if update
                 if (!empty($sell_lines)) {
                     foreach ($sell_lines as $sell_line) {
-                        if ($sell_line->woocommerce_line_items_id ==
-                            $product_line->id) {
+                        if (
+                            $sell_line->woocommerce_line_items_id ==
+                            $product_line->id
+                        ) {
                             $product_data['transaction_sell_lines_id'] = $sell_line->id;
                         }
                     }
@@ -1115,13 +1124,14 @@ class WoocommerceUtil extends Util
 
                 $product_lines[] = $product_data;
             } else {
-                return ['has_error' =>
-                        [
-                            'error_type' => 'order_product_not_found',
-                            'order_number' => $order->number,
-                            'product' => $product_line->name . ' SKU:' . $product_line->sku
-                        ]
-                    ];
+                return [
+                    'has_error' =>
+                    [
+                        'error_type' => 'order_product_not_found',
+                        'order_number' => $order->number,
+                        'product' => $product_line->name . ' SKU:' . $product_line->sku
+                    ]
+                ];
                 exit;
             }
         }
@@ -1136,45 +1146,45 @@ class WoocommerceUtil extends Util
             $f_name = !empty($order->billing->first_name) ? $order->billing->first_name : '';
             $l_name = !empty($order->billing->last_name) ? $order->billing->last_name : '';
             $customer_details = [
-                    'first_name' => $f_name,
-                    'last_name' => $l_name,
-                    'email' => !empty($order->billing->email) ? $order->billing->email : null,
-                    'name' => $f_name . ' ' . $l_name,
-                    'mobile' => $order->billing->phone,
-                    'address_line_1' => !empty($order->billing->address_1) ? $order->billing->address_1 : null,
-                    'address_line_2' => !empty($order->billing->address_2) ? $order->billing->address_2 : null,
-                    'city' => !empty($order->billing->city) ? $order->billing->city : null,
-                    'state' => !empty($order->billing->state) ? $order->billing->state : null,
-                    'country' => !empty($order->billing->country) ? $order->billing->country : null,
-                    'zip_code' => !empty($order->billing->postcode) ? $order->billing->postcode : null
-                ];
+                'first_name' => $f_name,
+                'last_name' => $l_name,
+                'email' => !empty($order->billing->email) ? $order->billing->email : null,
+                'name' => $f_name . ' ' . $l_name,
+                'mobile' => $order->billing->phone,
+                'address_line_1' => !empty($order->billing->address_1) ? $order->billing->address_1 : null,
+                'address_line_2' => !empty($order->billing->address_2) ? $order->billing->address_2 : null,
+                'city' => !empty($order->billing->city) ? $order->billing->city : null,
+                'state' => !empty($order->billing->state) ? $order->billing->state : null,
+                'country' => !empty($order->billing->country) ? $order->billing->country : null,
+                'zip_code' => !empty($order->billing->postcode) ? $order->billing->postcode : null
+            ];
         } else {
             //woocommerce api client object
             $woocommerce = $this->woo_client($business_id);
             $order_customer = $woocommerce->get('customers/' . $order_customer_id);
 
             $customer_details = [
-                    'first_name' => $order_customer->first_name,
-                    'last_name' => $order_customer->last_name,
-                    'email' => $order_customer->email,
-                    'name' => $order_customer->first_name . ' ' . $order_customer->last_name,
-                    'mobile' => $order_customer->billing->phone,
-                    'city' => $order_customer->billing->city,
-                    'state' => $order_customer->billing->state,
-                    'country' => $order_customer->billing->country,
-                    'address_line_1' => $order_customer->billing->address_1,
-                    'address_line_2' => $order_customer->billing->address_2,
-                    'zip_code' => $order_customer->billing->postcode
-                ];
+                'first_name' => $order_customer->first_name,
+                'last_name' => $order_customer->last_name,
+                'email' => $order_customer->email,
+                'name' => $order_customer->first_name . ' ' . $order_customer->last_name,
+                'mobile' => $order_customer->billing->phone,
+                'city' => $order_customer->billing->city,
+                'state' => $order_customer->billing->state,
+                'country' => $order_customer->billing->country,
+                'address_line_1' => $order_customer->billing->address_1,
+                'address_line_2' => $order_customer->billing->address_2,
+                'zip_code' => $order_customer->billing->postcode
+            ];
         }
-        
+
         if (!empty($customer_details['email'])) {
             $customer = Contact::where('business_id', $business_id)
-                            ->where('email', $customer_details['email'])
-                            ->OnlyCustomers()
-                            ->first();
+                ->where('email', $customer_details['email'])
+                ->OnlyCustomers()
+                ->first();
         }
-        
+
         if (empty($order_customer_id) && empty($customer_details['email'])) {
             $contactUtil = new ContactUtil;
             $customer = $contactUtil->getWalkInCustomer($business_id, false);
@@ -1302,7 +1312,7 @@ class WoocommerceUtil extends Util
             'card_holder_name' => '',
             'card_month' => '',
             'card_security' => '',
-            'cheque_number' =>'',
+            'cheque_number' => '',
             'bank_account_number' => '',
             'note' => $order->payment_method_title,
             'paid_on' => $order->date_paid
@@ -1400,20 +1410,20 @@ class WoocommerceUtil extends Util
     public function getLastSync($business_id, $type, $for_humans = true)
     {
         $last_sync = WoocommerceSyncLog::where('business_id', $business_id)
-                            ->where('sync_type', $type)
-                            ->max('created_at');
+            ->where('sync_type', $type)
+            ->max('created_at');
 
         //If last reset present make last sync to null
         $last_reset = WoocommerceSyncLog::where('business_id', $business_id)
-                            ->where('sync_type', $type)
-                            ->where('operation_type', 'reset')
-                            ->max('created_at');
+            ->where('sync_type', $type)
+            ->where('operation_type', 'reset')
+            ->max('created_at');
         if (!empty($last_reset) && !empty($last_sync) && $last_reset >= $last_sync) {
             $last_sync = null;
         }
 
         if (!empty($last_sync) && $for_humans) {
-            $last_sync = \Carbon::createFromFormat('Y-m-d H:i:s', $last_sync)->diffForHumans();
+            $last_sync = Carbon::createFromFormat('Y-m-d H:i:s', $last_sync)->diffForHumans();
         }
         return $last_sync;
     }
@@ -1502,13 +1512,14 @@ class WoocommerceUtil extends Util
     public function getLastStockUpdated($location_id, $product_id)
     {
         $last_updated = VariationLocationDetails::where('location_id', $location_id)
-                                    ->where('product_id', $product_id)
-                                    ->max('updated_at');
+            ->where('product_id', $product_id)
+            ->max('updated_at');
 
         return $last_updated;
     }
 
-    private function formatDecimalPoint($number, $type = 'currency') {
+    private function formatDecimalPoint($number, $type = 'currency')
+    {
 
         $precision = 4;
         $currency_precision = config('constants.currency_precision');

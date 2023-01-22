@@ -2,13 +2,13 @@
 
 namespace App\Exceptions;
 
-use App\Mail\ExceptionOccured;
 use Exception;
-use Illuminate\Auth\AuthenticationException;
+use App\Mail\ExceptionOccured;
+use Illuminate\Support\Facades\Mail;
 
-use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Mail;
+use Illuminate\Auth\AuthenticationException;
 use Symfony\Component\Debug\Exception\FlattenException;
+use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\Debug\ExceptionHandler as SymfonyExceptionHandler;
 
 class Handler extends ExceptionHandler
@@ -88,7 +88,7 @@ class Handler extends ExceptionHandler
 
             $html = $handler->getHtml($e);
             $email = config('mail.username');
-            
+
             if (!empty($email)) {
                 Mail::to($email)->send(new ExceptionOccured($html));
             }

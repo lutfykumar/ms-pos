@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class NewTaskCommentNotification extends Notification
+class NewTaskCommentNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -36,7 +36,7 @@ class NewTaskCommentNotification extends Notification
         if (isPusherEnabled()) {
             $channels[] = 'broadcast';
         }
-        
+
         return $channels;
     }
 
@@ -49,9 +49,9 @@ class NewTaskCommentNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', 'https://laravel.com')
-                    ->line('Thank you for using our application!');
+            ->line('The introduction to the notification.')
+            ->action('Notification Action', 'https://laravel.com')
+            ->line('Thank you for using our application!');
     }
 
     /**
@@ -77,7 +77,7 @@ class NewTaskCommentNotification extends Notification
     {
         return new BroadcastMessage([
             'title' => __('essentials::lang.new_comment'),
-            'body' => strip_tags(__('essentials::lang.new_task_comment_notification', ['added_by' => $this->comment->added_by->user_full_name, 'task_id' => $this->comment->task->task_id]) ),
+            'body' => strip_tags(__('essentials::lang.new_task_comment_notification', ['added_by' => $this->comment->added_by->user_full_name, 'task_id' => $this->comment->task->task_id])),
             'link' => action('\Modules\Essentials\Http\Controllers\ToDoController@show', $this->comment->task->id)
         ]);
     }

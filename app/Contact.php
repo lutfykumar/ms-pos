@@ -2,11 +2,11 @@
 
 namespace App;
 
-use DB;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-
+use Illuminate\Support\Facades\DB;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class Contact extends Authenticatable
 {
@@ -29,11 +29,11 @@ class Contact extends Authenticatable
     protected $casts = [
         'shipping_custom_field_details' => 'array',
     ];
-    
+
 
     /**
-    * Get the business that owns the user.
-    */
+     * Get the business that owns the user.
+     */
     public function business()
     {
         return $this->belongsTo(\App\Business::class);
@@ -45,8 +45,8 @@ class Contact extends Authenticatable
     }
 
     /**
-    * Filters only own created suppliers or has access to the supplier
-    */
+     * Filters only own created suppliers or has access to the supplier
+     */
     public function scopeOnlySuppliers($query)
     {
         if (auth()->check() && !auth()->user()->can('supplier.view') && !auth()->user()->can('supplier.view_own')) {
@@ -57,7 +57,7 @@ class Contact extends Authenticatable
 
         if (auth()->check() && !auth()->user()->can('supplier.view') && auth()->user()->can('supplier.view_own')) {
             $query->leftjoin('user_contact_access AS ucas', 'contacts.id', 'ucas.contact_id');
-            $query->where( function($q){
+            $query->where(function ($q) {
                 $user_id = auth()->user()->id;
                 $q->where('contacts.created_by', $user_id)
                     ->orWhere('ucas.user_id', $user_id);
@@ -68,20 +68,20 @@ class Contact extends Authenticatable
     }
 
     /**
-    * Filters only own created customers or has access to the customer
-    */
+     * Filters only own created customers or has access to the customer
+     */
     public function scopeOnlyCustomers($query)
     {
         //Commented because of issue in woocommerce sync
         // if (auth()->check() && !auth()->user()->can('customer.view') && !auth()->user()->can('customer.view_own')) {
         //     abort(403, 'Unauthorized action.');
         // }
-            
+
         $query->whereIn('contacts.type', ['customer', 'both']);
 
         if (auth()->check() && !auth()->user()->can('customer.view') && auth()->user()->can('customer.view_own')) {
             $query->leftjoin('user_contact_access AS ucas', 'contacts.id', 'ucas.contact_id');
-            $query->where( function($q){
+            $query->where(function ($q) {
                 $user_id = auth()->user()->id;
                 $q->where('contacts.created_by', $user_id)
                     ->orWhere('ucas.user_id', $user_id);
@@ -91,12 +91,12 @@ class Contact extends Authenticatable
     }
 
     /**
-    * Filters only own created contact or has access to the contact
-    */
+     * Filters only own created contact or has access to the contact
+     */
     public function scopeOnlyOwnContact($query)
     {
         $query->leftjoin('user_contact_access AS ucas', 'contacts.id', 'ucas.contact_id');
-        $query->where( function($q){
+        $query->where(function ($q) {
             $user_id = auth()->user()->id;
             $q->where('contacts.created_by', $user_id)
                 ->orWhere('ucas.user_id', $user_id);
@@ -124,9 +124,9 @@ class Contact extends Authenticatable
     public static function contactDropdown($business_id, $exclude_default = false, $prepend_none = true, $append_id = true)
     {
         $query = Contact::where('business_id', $business_id)
-                    ->where('type', '!=', 'lead')
-                    ->active();
-                    
+            ->where('type', '!=', 'lead')
+            ->active();
+
         if ($exclude_default) {
             $query->where('is_default', 0);
         }
@@ -135,17 +135,17 @@ class Contact extends Authenticatable
             $query->select(
                 DB::raw("IF(contacts.contact_id IS NULL OR contacts.contact_id='', name, CONCAT(name, ' - ', COALESCE(supplier_business_name, ''), '(', contacts.contact_id, ')')) AS supplier"),
                 'contacts.id'
-                    );
+            );
         } else {
             $query->select(
                 'contacts.id',
                 DB::raw("IF (supplier_business_name IS not null, CONCAT(name, ' (', supplier_business_name, ')'), name) as supplier")
             );
         }
-        
+
         if (auth()->check() && !auth()->user()->can('supplier.view') && auth()->user()->can('supplier.view_own')) {
             $query->leftjoin('user_contact_access AS ucas', 'contacts.id', 'ucas.contact_id');
-            $query->where( function($q){
+            $query->where(function ($q) {
                 $user_id = auth()->user()->id;
                 $q->where('contacts.created_by', $user_id)
                     ->orWhere('ucas.user_id', $user_id);
@@ -173,19 +173,19 @@ class Contact extends Authenticatable
     public static function suppliersDropdown($business_id, $prepend_none = true, $append_id = true)
     {
         $all_contacts = Contact::where('contacts.business_id', $business_id)
-                        ->whereIn('contacts.type', ['supplier', 'both'])
-                        ->active();
+            ->whereIn('contacts.type', ['supplier', 'both'])
+            ->active();
 
         if ($append_id) {
             $all_contacts->select(
                 DB::raw("IF(contacts.contact_id IS NULL OR contacts.contact_id='', name, CONCAT(contacts.name, ' - ', COALESCE(contacts.supplier_business_name, ''), '(', contacts.contact_id, ')')) AS supplier"),
                 'contacts.id'
-                    );
+            );
         } else {
             $all_contacts->select(
                 'contacts.id',
                 DB::raw("CONCAT(contacts.name, ' (', contacts.supplier_business_name, ')') as supplier")
-                );
+            );
         }
 
         if (auth()->check() && !auth()->user()->can('supplier.view') && auth()->user()->can('supplier.view_own')) {
@@ -213,14 +213,14 @@ class Contact extends Authenticatable
     public static function customersDropdown($business_id, $prepend_none = true, $append_id = true)
     {
         $all_contacts = Contact::where('contacts.business_id', $business_id)
-                        ->whereIn('contacts.type', ['customer', 'both'])
-                        ->active();
+            ->whereIn('contacts.type', ['customer', 'both'])
+            ->active();
 
         if ($append_id) {
             $all_contacts->select(
                 DB::raw("IF(contacts.contact_id IS NULL OR contacts.contact_id='', CONCAT( COALESCE(contacts.supplier_business_name, ''), ' - ', contacts.name), CONCAT(COALESCE(contacts.supplier_business_name, ''), ' - ', name, ' (', contacts.contact_id, ')')) AS customer"),
                 'contacts.id'
-                );
+            );
         } else {
             $all_contacts->select('contacts.id', DB::raw("contacts.name as customer"));
         }
@@ -332,7 +332,7 @@ class Contact extends Authenticatable
         if (!empty($this->last_name)) {
             $name_array[] = $this->last_name;
         }
-        
+
         return implode(' ', $name_array);
     }
 
@@ -351,7 +351,7 @@ class Contact extends Authenticatable
         if (!empty($this->last_name)) {
             $name_array[] = $this->last_name;
         }
-        
+
         $full_name = implode(' ', $name_array);
         $business_name = !empty($this->supplier_business_name) ? $this->supplier_business_name . ', ' : '';
 

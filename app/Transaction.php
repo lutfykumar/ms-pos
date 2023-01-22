@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Transaction extends Model
@@ -10,7 +11,7 @@ class Transaction extends Model
 
     //Transaction status = ['received','pending','ordered','draft','final', 'in_transit', 'completed']
 
-    
+
     /**
      * The attributes that aren't mass assignable.
      *
@@ -36,7 +37,7 @@ class Transaction extends Model
      * @var string
      */
     protected $table = 'transactions';
-    
+
     public function purchase_lines()
     {
         return $this->hasMany(\App\PurchaseLine::class);
@@ -133,7 +134,7 @@ class Transaction extends Model
     public function getDocumentPathAttribute()
     {
         $path = !empty($this->document) ? asset('/uploads/documents/' . $this->document) : null;
-        
+
         return $path;
     }
 
@@ -142,7 +143,7 @@ class Transaction extends Model
      */
     public function getDocumentNameAttribute()
     {
-        $document_name = !empty(explode("_", $this->document, 2)[1]) ? explode("_", $this->document, 2)[1] : $this->document ;
+        $document_name = !empty(explode("_", $this->document, 2)[1]) ? explode("_", $this->document, 2)[1] : $this->document;
         return $document_name;
     }
 
@@ -260,29 +261,29 @@ class Transaction extends Model
     {
         return $this->belongsTo(\App\Account::class, 'prefer_payment_account');
     }
-    
+
     /**
      * Returns the list of discount types.
      */
     public static function discountTypes()
     {
         return [
-                'fixed' => __('lang_v1.fixed'),
-                'percentage' => __('lang_v1.percentage')
-            ];
+            'fixed' => __('lang_v1.fixed'),
+            'percentage' => __('lang_v1.percentage')
+        ];
     }
 
     public static function transactionTypes()
     {
         return  [
-                'sell' => __('sale.sale'),
-                'purchase' => __('lang_v1.purchase'),
-                'sell_return' => __('lang_v1.sell_return'),
-                'purchase_return' =>  __('lang_v1.purchase_return'),
-                'opening_balance' => __('lang_v1.opening_balance'),
-                'payment' => __('lang_v1.payment'),
-                'ledger_discount' => __('lang_v1.ledger_discount')
-            ];
+            'sell' => __('sale.sale'),
+            'purchase' => __('lang_v1.purchase'),
+            'sell_return' => __('lang_v1.sell_return'),
+            'purchase_return' =>  __('lang_v1.purchase_return'),
+            'opening_balance' => __('lang_v1.opening_balance'),
+            'payment' => __('lang_v1.payment'),
+            'ledger_discount' => __('lang_v1.ledger_discount')
+        ];
     }
 
     public static function getPaymentStatus($transaction)
@@ -290,9 +291,9 @@ class Transaction extends Model
         $payment_status = $transaction->payment_status;
 
         if (in_array($payment_status, ['partial', 'due']) && !empty($transaction->pay_term_number) && !empty($transaction->pay_term_type)) {
-            $transaction_date = \Carbon::parse($transaction->transaction_date);
+            $transaction_date = Carbon::parse($transaction->transaction_date);
             $due_date = $transaction->pay_term_type == 'days' ? $transaction_date->addDays($transaction->pay_term_number) : $transaction_date->addMonths($transaction->pay_term_number);
-            $now = \Carbon::now();
+            $now = Carbon::now();
             if ($now->gt($due_date)) {
                 $payment_status = $payment_status == 'due' ? 'overdue' : 'partial-overdue';
             }
@@ -306,7 +307,7 @@ class Transaction extends Model
      */
     public function getDueDateAttribute()
     {
-        $transaction_date = \Carbon::parse($this->transaction_date);
+        $transaction_date = Carbon::parse($this->transaction_date);
         if (!empty($this->pay_term_type) && !empty($this->pay_term_number)) {
             $due_date = $this->pay_term_type == 'days' ? $transaction_date->addDays($this->pay_term_number) : $transaction_date->addMonths($this->pay_term_number);
         } else {
@@ -324,7 +325,8 @@ class Transaction extends Model
     /**
      * Attributes to be logged for activity
      */
-    public function getLogPropertiesAttribute() {
+    public function getLogPropertiesAttribute()
+    {
         $properties = [];
 
         if (in_array($this->type, ['sell_transfer'])) {
@@ -347,17 +349,17 @@ class Transaction extends Model
     public function scopeOverDue($query)
     {
         return $query->whereIn('transactions.payment_status', ['due', 'partial'])
-                    ->whereNotNull('transactions.pay_term_number')
-                    ->whereNotNull('transactions.pay_term_type')
-                    ->whereRaw("IF(transactions.pay_term_type='days', DATE_ADD(transactions.transaction_date, INTERVAL transactions.pay_term_number DAY) < CURDATE(), DATE_ADD(transactions.transaction_date, INTERVAL transactions.pay_term_number MONTH) < CURDATE())");
+            ->whereNotNull('transactions.pay_term_number')
+            ->whereNotNull('transactions.pay_term_type')
+            ->whereRaw("IF(transactions.pay_term_type='days', DATE_ADD(transactions.transaction_date, INTERVAL transactions.pay_term_number DAY) < CURDATE(), DATE_ADD(transactions.transaction_date, INTERVAL transactions.pay_term_number MONTH) < CURDATE())");
     }
 
     public static function sell_statuses()
     {
         return [
-            'final' => __('sale.final'), 
-            'draft' => __('sale.draft'), 
-            'quotation' => __('lang_v1.quotation'), 
+            'final' => __('sale.final'),
+            'draft' => __('sale.draft'),
+            'quotation' => __('lang_v1.quotation'),
             'proforma' => __('lang_v1.proforma')
         ];
     }
@@ -365,7 +367,7 @@ class Transaction extends Model
     public static function sales_order_statuses($only_key_value = false)
     {
         if ($only_key_value) {
-           return [
+            return [
                 'ordered' => __('lang_v1.ordered'),
                 'partial' => __('lang_v1.partial'),
                 'completed' => __('restaurant.completed')
@@ -392,11 +394,11 @@ class Transaction extends Model
         $sales_orders = null;
         if (!empty($this->sales_order_ids)) {
             $sales_orders = Transaction::where('business_id', $this->business_id)
-                                ->where('type', 'sales_order')
-                                ->whereIn('id', $this->sales_order_ids)
-                                ->get();
+                ->where('type', 'sales_order')
+                ->whereIn('id', $this->sales_order_ids)
+                ->get();
         }
-        
+
         return $sales_orders;
     }
 }

@@ -4,9 +4,9 @@ namespace Modules\Woocommerce\Http\Controllers;
 
 use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
+use Nwidart\Menus\Facades\Menu;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Artisan;
-use Menu;
 
 class DataController extends Controller
 {
@@ -69,8 +69,10 @@ class DataController extends Controller
     public function parse_notification($notification)
     {
         $notification_data = [];
-        if ($notification->type ==
-            'Modules\Woocommerce\Notifications\SyncOrdersNotification') {
+        if (
+            $notification->type ==
+            'Modules\Woocommerce\Notifications\SyncOrdersNotification'
+        ) {
             $msg = __('woocommerce::lang.orders_sync_notification');
 
             $notification_data = [
@@ -97,7 +99,7 @@ class DataController extends Controller
         $business_id = request()->session()->get('user.business_id');
 
         $module_util = new ModuleUtil();
-        $is_woo_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'woocommerce_module', 'superadmin_package');
+        $is_woo_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'woocommerce_module', 'superadmin_package');
         if ($is_woo_enabled) {
             return  [
                 'template_path' => $path,
@@ -125,9 +127,9 @@ class DataController extends Controller
     public function modifyAdminMenu()
     {
         $module_util = new ModuleUtil();
-        
+
         $business_id = session()->get('user.business_id');
-        $is_woo_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'woocommerce_module', 'superadmin_package');
+        $is_woo_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'woocommerce_module', 'superadmin_package');
 
         if ($is_woo_enabled && (auth()->user()->can('woocommerce.syc_categories') || auth()->user()->can('woocommerce.sync_products') || auth()->user()->can('woocommerce.sync_orders') || auth()->user()->can('woocommerce.map_tax_rates') || auth()->user()->can('woocommerce.access_woocommerce_api_settings'))) {
             Menu::modify('admin-sidebar-menu', function ($menu) {

@@ -4,9 +4,9 @@ namespace Modules\Connector\Http\Controllers;
 
 use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
+use Nwidart\Menus\Facades\Menu;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Artisan;
-use Menu;
 
 class DataController extends Controller
 {
@@ -28,12 +28,12 @@ class DataController extends Controller
     public function modifyAdminMenu()
     {
         $module_util = new ModuleUtil();
-        
+
         if (auth()->user()->can('superadmin')) {
             $is_connector_enabled = $module_util->isModuleInstalled('Connector');
         } else {
             $business_id = session()->get('user.business_id');
-            $is_connector_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'connector_module', 'superadmin_package');
+            $is_connector_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'connector_module', 'superadmin_package');
         }
         if ($is_connector_enabled) {
             Menu::modify('admin-sidebar-menu', function ($menu) {
@@ -43,13 +43,13 @@ class DataController extends Controller
                         if (auth()->user()->can('superadmin')) {
                             $sub->url(
                                 action('\Modules\Connector\Http\Controllers\ClientController@index'),
-                               __('connector::lang.clients'),
+                                __('connector::lang.clients'),
                                 ['icon' => 'fa fas fa-network-wired', 'active' => request()->segment(1) == 'connector' && request()->segment(2) == 'api']
                             );
                         }
                         $sub->url(
                             url('\docs'),
-                           __('connector::lang.documentation'),
+                            __('connector::lang.documentation'),
                             ['icon' => 'fa fas fa-book', 'active' => request()->segment(1) == 'docs']
                         );
                     },

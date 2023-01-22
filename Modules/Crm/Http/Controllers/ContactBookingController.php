@@ -2,13 +2,14 @@
 
 namespace Modules\Crm\Http\Controllers;
 
+use App\Utils\Util;
+use App\BusinessLocation;
+use App\Restaurant\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
-use App\BusinessLocation;
-use App\Restaurant\Booking;
-use App\Utils\Util;
 
 class ContactBookingController extends Controller
 {
@@ -17,6 +18,7 @@ class ContactBookingController extends Controller
      *
      */
     protected $commonUtil;
+    protected $bookingStatuses;
 
     public function __construct(Util $commonUtil)
     {
@@ -54,9 +56,9 @@ class ContactBookingController extends Controller
             $start_date = request()->start;
             $end_date = request()->end;
             $query = Booking::where('bookings.business_id', $business_id)
-                            ->where('bookings.created_by', $user_id)
-                            ->leftjoin('business_locations as bl', 'bl.id', '=', 'bookings.location_id')
-                            ->select('bookings.*', 'bl.name as location_name');
+                ->where('bookings.created_by', $user_id)
+                ->leftjoin('business_locations as bl', 'bl.id', '=', 'bookings.location_id')
+                ->select('bookings.*', 'bl.name as location_name');
 
             if (!empty(request()->location_id)) {
                 $query->where('bookings.location_id', request()->location_id);
@@ -69,14 +71,13 @@ class ContactBookingController extends Controller
                 ->editColumn('booking_end', function ($row) {
                     return $this->commonUtil->format_date($row->booking_end, true);
                 })
-                ->editColumn('booking_status', function($row){
+                ->editColumn('booking_status', function ($row) {
                     $statuses = $this->bookingStatuses;
                     return '<span class="label ' . $statuses[$row->booking_status]['class'] . '" >' . $statuses[$row->booking_status]['label'] . '</span>';
                 })
                 ->rawColumns(['booking_status'])
-               ->removeColumn('id')
+                ->removeColumn('id')
                 ->make(true);
-            
         }
 
         $business_locations = BusinessLocation::forDropdown($business_id, false, false, true, false);
@@ -112,13 +113,13 @@ class ContactBookingController extends Controller
 
                 //Check if booking is available for the required input
                 $query = Booking::where('business_id', $business_id)
-                                ->where('location_id', $input['location_id'])
-                                ->where('contact_id', $input['contact_id'])
-                                ->where(function ($q) use ($date_range) {
-                                    $q->whereBetween('booking_start', $date_range)
-                                    ->orWhereBetween('booking_end', $date_range);
-                                });
-                
+                    ->where('location_id', $input['location_id'])
+                    ->where('contact_id', $input['contact_id'])
+                    ->where(function ($q) use ($date_range) {
+                        $q->whereBetween('booking_start', $date_range)
+                            ->orWhereBetween('booking_end', $date_range);
+                    });
+
                 $existing_booking = $query->first();
                 if (empty($existing_booking)) {
                     $input['business_id'] = $business_id;
@@ -126,30 +127,35 @@ class ContactBookingController extends Controller
                     $input['booking_start'] = $booking_start;
                     $input['booking_end'] = $booking_end;
                     $booking = Booking::createBooking($input);
-                    
-                    $output = ['success' => 1,
+
+                    $output = [
+                        'success' => 1,
                         'msg' => trans("lang_v1.added_success"),
                     ];
                 } else {
                     $time_range = $this->commonUtil->format_date($existing_booking->booking_start, true) . ' ~ ' .
-                                    $this->commonUtil->format_date($existing_booking->booking_end, true);
+                        $this->commonUtil->format_date($existing_booking->booking_end, true);
 
-                    $output = ['success' => 0,
-                            'msg' => trans(
-                                "restaurant.booking_not_available",
-                                ['customer_name' => $existing_booking->customer->name,
-                                'booking_time_range' => $time_range]
-                            )
-                        ];
+                    $output = [
+                        'success' => 0,
+                        'msg' => trans(
+                            "restaurant.booking_not_available",
+                            [
+                                'customer_name' => $existing_booking->customer->name,
+                                'booking_time_range' => $time_range
+                            ]
+                        )
+                    ];
                 }
             } else {
                 die(__("messages.something_went_wrong"));
             }
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            $output = ['success' => 0,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+            $output = [
+                'success' => 0,
+                'msg' => __("messages.something_went_wrong")
+            ];
         }
         return $output;
     }

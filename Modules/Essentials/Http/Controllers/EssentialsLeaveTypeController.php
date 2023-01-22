@@ -6,8 +6,9 @@ use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
-use Modules\Essentials\Entities\EssentialsLeaveType;
+use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
+use Modules\Essentials\Entities\EssentialsLeaveType;
 
 class EssentialsLeaveTypeController extends Controller
 {
@@ -46,7 +47,7 @@ class EssentialsLeaveTypeController extends Controller
 
         if (request()->ajax()) {
             $leave_types = EssentialsLeaveType::where('business_id', $business_id)
-                        ->select(['leave_type', 'max_leave_count', 'id']);
+                ->select(['leave_type', 'max_leave_count', 'id']);
 
             return Datatables::of($leave_types)
                 ->addColumn(
@@ -93,19 +94,21 @@ class EssentialsLeaveTypeController extends Controller
 
         try {
             $input = $request->only(['leave_type', 'max_leave_count', 'leave_count_interval']);
-            
+
             $input['business_id'] = $business_id;
 
             EssentialsLeaveType::create($input);
-            $output = ['success' => true,
-                            'msg' => __("lang_v1.added_success")
-                        ];
+            $output = [
+                'success' => true,
+                'msg' => __("lang_v1.added_success")
+            ];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => false,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => false,
+                'msg' => __("messages.something_went_wrong")
+            ];
         }
 
         return $output;
@@ -137,7 +140,7 @@ class EssentialsLeaveTypeController extends Controller
         }
 
         $leave_type = EssentialsLeaveType::where('business_id', $business_id)
-                                        ->find($id);
+            ->find($id);
 
         return view('essentials::leave_type.edit')->with(compact('leave_type'));
     }
@@ -159,24 +162,28 @@ class EssentialsLeaveTypeController extends Controller
         }
 
         try {
-            $input = $request->only(['leave_type', 'max_leave_count',
-                'leave_count_interval']);
+            $input = $request->only([
+                'leave_type', 'max_leave_count',
+                'leave_count_interval'
+            ]);
 
             $input['business_id'] = $business_id;
 
             EssentialsLeaveType::where('business_id', $business_id)
-                            ->where('id', $id)
-                            ->update($input);
+                ->where('id', $id)
+                ->update($input);
 
-            $output = ['success' => true,
-                            'msg' => __("lang_v1.updated_success")
-                        ];
+            $output = [
+                'success' => true,
+                'msg' => __("lang_v1.updated_success")
+            ];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => false,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => false,
+                'msg' => __("messages.something_went_wrong")
+            ];
         }
 
         return $output;

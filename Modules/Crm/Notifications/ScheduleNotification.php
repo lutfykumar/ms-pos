@@ -3,11 +3,12 @@
 namespace Modules\Crm\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\BroadcastMessage;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class ScheduleNotification extends Notification
+class ScheduleNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -50,7 +51,7 @@ class ScheduleNotification extends Notification
         return (new MailMessage)
             ->subject('Invitation for schedule')
             ->greeting('Hi')
-            ->line('You have been invited for the schedule '. $this->schedule->title. ' starts at ' .$this->schedule->start_datetime)
+            ->line('You have been invited for the schedule ' . $this->schedule->title . ' starts at ' . $this->schedule->start_datetime)
             ->action('Log in', url('/login'));
     }
 

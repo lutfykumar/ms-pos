@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class NewTaskDocumentNotification extends Notification
+class NewTaskDocumentNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -36,7 +36,7 @@ class NewTaskDocumentNotification extends Notification
         if (isPusherEnabled()) {
             $channels[] = 'broadcast';
         }
-        
+
         return $channels;
     }
 
@@ -49,9 +49,9 @@ class NewTaskDocumentNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', 'https://laravel.com')
-                    ->line('Thank you for using our application!');
+            ->line('The introduction to the notification.')
+            ->action('Notification Action', 'https://laravel.com')
+            ->line('Thank you for using our application!');
     }
 
     /**
@@ -79,7 +79,7 @@ class NewTaskDocumentNotification extends Notification
     {
         return new BroadcastMessage([
             'title' => __('essentials::lang.new_document'),
-            'body' => strip_tags( __('essentials::lang.new_task_document_notification', ['uploaded_by' => $this->document['uploaded_by_user_name'], 'task_id' => $this->document['task_id']]) ),
+            'body' => strip_tags(__('essentials::lang.new_task_document_notification', ['uploaded_by' => $this->document['uploaded_by_user_name'], 'task_id' => $this->document['task_id']])),
             'link' => action('\Modules\Essentials\Http\Controllers\ToDoController@show', $this->document['id'])
         ]);
     }

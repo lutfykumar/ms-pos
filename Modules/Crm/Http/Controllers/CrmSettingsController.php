@@ -2,12 +2,13 @@
 
 namespace Modules\Crm\Http\Controllers;
 
+use App\Business;
+use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Routing\Controller;
-use App\Business;
 use Modules\Crm\Utils\CrmUtil;
-use App\Utils\ModuleUtil;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 
 class CrmSettingsController extends Controller
 {
@@ -45,7 +46,7 @@ class CrmSettingsController extends Controller
         $crm_settings = $this->crmUtil->getCrmSettings($business_id);
 
         return view('crm::settings.index')
-                ->with(compact('crm_settings'));
+            ->with(compact('crm_settings'));
     }
 
     /**
@@ -68,17 +69,19 @@ class CrmSettingsController extends Controller
             }
 
             Business::where('id', $business_id)
-                        ->update(['crm_settings' => json_encode($input)]);
+                ->update(['crm_settings' => json_encode($input)]);
 
-            $output = ['success' => true,
-                            'msg' => __("lang_v1.updated_success")
-                        ];
+            $output = [
+                'success' => true,
+                'msg' => __("lang_v1.updated_success")
+            ];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => false,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => false,
+                'msg' => __("messages.something_went_wrong")
+            ];
         }
 
         return redirect()->back()->with(['status' => $output]);

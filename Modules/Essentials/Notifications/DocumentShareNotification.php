@@ -4,10 +4,11 @@ namespace Modules\Essentials\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Modules\Essentials\Entities\DocumentShare;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class DocumentShareNotification extends Notification
+class DocumentShareNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -37,7 +38,7 @@ class DocumentShareNotification extends Notification
         if (isPusherEnabled()) {
             $channels[] = 'broadcast';
         }
-        
+
         return $channels;
     }
 
@@ -70,7 +71,7 @@ class DocumentShareNotification extends Notification
      */
     public function toBroadcast($notifiable)
     {
-        $notifiction_data = DocumentShare::documentShareNotificationData($this->notificationData()); 
+        $notifiction_data = DocumentShare::documentShareNotificationData($this->notificationData());
         return new BroadcastMessage([
             'title' => $notifiction_data['title'],
             'body' => strip_tags($notifiction_data['msg']),

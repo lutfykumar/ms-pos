@@ -2,6 +2,7 @@
 
 namespace Modules\Repair\Http\Controllers;
 
+use Exception;
 use App\Brands;
 use App\Category;
 use App\Transaction;
@@ -9,10 +10,12 @@ use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
+use Modules\Repair\Entities\JobSheet;
 use Modules\Repair\Entities\DeviceModel;
 use Yajra\DataTables\Facades\DataTables;
-use Modules\Repair\Entities\JobSheet;
 
 class DeviceModelController extends Controller
 {
@@ -45,8 +48,8 @@ class DeviceModelController extends Controller
 
         if ($request->ajax()) {
             $models = DeviceModel::with('Device', 'Brand')
-                        ->where('business_id', $business_id)
-                        ->select('*');
+                ->where('business_id', $business_id)
+                ->select('*');
 
             if (!empty($request->get('brand_id'))) {
                 $models->where('brand_id', $request->get('brand_id'));
@@ -57,37 +60,37 @@ class DeviceModelController extends Controller
             }
 
             return Datatables::of($models)
-                    ->addColumn('action', function ($row) {
-                        $html = '<div class="btn-group">
+                ->addColumn('action', function ($row) {
+                    $html = '<div class="btn-group">
                                     <button class="btn btn-info dropdown-toggle btn-xs" type="button"  data-toggle="dropdown" aria-expanded="false">
-                                        '.__("messages.action").'
+                                        ' . __("messages.action") . '
                                         <span class="caret"></span>
                                         <span class="sr-only">
-                                        '.__("messages.action").'
+                                        ' . __("messages.action") . '
                                         </span>
                                     </button>
                                     ';
 
-                        $html .= '<ul class="dropdown-menu dropdown-menu-left" role="menu">
+                    $html .= '<ul class="dropdown-menu dropdown-menu-left" role="menu">
                                 <li>
                                     <a data-href="' . action('\Modules\Repair\Http\Controllers\DeviceModelController@edit', ['id' => $row->id]) . '" class="cursor-pointer edit_device_model">
                                         <i class="fa fa-edit"></i>
-                                        '.__("messages.edit").'
+                                        ' . __("messages.edit") . '
                                     </a>
                                 </li>
                                 <li>
                                     <a data-href="' . action('\Modules\Repair\Http\Controllers\DeviceModelController@destroy', ['id' => $row->id]) . '"  id="delete_a_model" class="cursor-pointer">
                                         <i class="fas fa-trash"></i>
-                                        '.__("messages.delete").'
+                                        ' . __("messages.delete") . '
                                     </a>
                                 </li>
                                 </ul>';
 
-                        $html .= '
+                    $html .= '
                                 </div>';
 
-                        return $html;
-                    })
+                    return $html;
+                })
                 ->editColumn('repair_checklist', function ($row) {
                     $checklist = '';
                     if (!empty($row->repair_checklist)) {
@@ -153,7 +156,7 @@ class DeviceModelController extends Controller
             ];
         } catch (Exception $e) {
 
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
                 'success' => false,
@@ -188,7 +191,7 @@ class DeviceModelController extends Controller
         }
 
         $model = DeviceModel::where('business_id', $business_id)
-                    ->findOrFail($id);
+            ->findOrFail($id);
 
         $brands = Brands::forDropdown($business_id, false, true);
         $devices = Category::forDropdown($business_id, 'device');
@@ -215,7 +218,7 @@ class DeviceModelController extends Controller
             $input = $request->only('name', 'brand_id', 'device_id', 'repair_checklist');
 
             $model = DeviceModel::where('business_id', $business_id)
-                            ->findOrFail($id);
+                ->findOrFail($id);
 
             $model->update($input);
 
@@ -226,7 +229,7 @@ class DeviceModelController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
 
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
                 'success' => false,
@@ -253,7 +256,7 @@ class DeviceModelController extends Controller
         if (request()->ajax()) {
             try {
                 $model = DeviceModel::where('business_id', $business_id)
-                            ->findOrFail($id);
+                    ->findOrFail($id);
 
                 $model->delete();
 
@@ -262,7 +265,7 @@ class DeviceModelController extends Controller
                     'msg' => __('lang_v1.success'),
                 ];
             } catch (Exception $e) {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
                 $output = [
                     'success' => false,
@@ -285,7 +288,7 @@ class DeviceModelController extends Controller
         $brand_id = $request->get('brand_id');
 
         $query = DeviceModel::where('business_id', $business_id)
-                    ->where('device_id', $device_id);
+            ->where('device_id', $device_id);
 
         if (!empty($brand_id)) {
             $query->where('brand_id', $brand_id);
@@ -295,8 +298,8 @@ class DeviceModelController extends Controller
 
         //dynamically generate dropdown
         $model_html = View::make('repair::device_model.partials.device_model_drodown')
-                        ->with(compact('models'))
-                        ->render();
+            ->with(compact('models'))
+            ->render();
 
         return $model_html;
     }
@@ -314,14 +317,14 @@ class DeviceModelController extends Controller
         $job_sheet_id = $request->get('job_sheet_id');
 
         $device_model = DeviceModel::where('business_id', $business_id)
-                            ->find($model_id);
+            ->find($model_id);
 
         $selected_checklist = [];
         //used while editing and creating invoivce
         if (!empty($transaction_id)) {
             $transaction = Transaction::where('business_id', $business_id)
-                            ->where('type', 'sell')
-                            ->find($transaction_id);
+                ->where('type', 'sell')
+                ->find($transaction_id);
 
             $selected_checklist = !empty($transaction->repair_checklist) ? json_decode($transaction->repair_checklist, true) : [];
         }
@@ -329,7 +332,7 @@ class DeviceModelController extends Controller
         //used while adding/editing/creating job sheet and its invoivce
         if (!empty($job_sheet_id)) {
             $job_sheet = JobSheet::where('business_id', $business_id)
-                            ->find($job_sheet_id);
+                ->find($job_sheet_id);
 
             $selected_checklist = !empty($job_sheet->checklist) ? $job_sheet->checklist : [];
         }
@@ -338,11 +341,11 @@ class DeviceModelController extends Controller
         if (!empty($device_model) && !empty($device_model->repair_checklist)) {
             $checklists = explode('|', $device_model->repair_checklist);
         }
-        
+
         //dynamically generate dropdown
         $checklists_html = View::make('repair::repair.partials.checklists')
-                            ->with(compact('checklists', 'selected_checklist'))
-                            ->render();
+            ->with(compact('checklists', 'selected_checklist'))
+            ->render();
 
         return $checklists_html;
     }

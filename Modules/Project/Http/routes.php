@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+
 Route::group(['middleware' => ['web', 'SetSessionData', 'auth', 'language', 'timezone', 'AdminSidebarMenu'], 'prefix' => 'project', 'namespace' => 'Modules\Project\Http\Controllers'], function () {
     Route::put('project/{id}/post-status', 'ProjectController@postProjectStatus');
     Route::put('project-settings', 'ProjectController@postSettings');

@@ -2,16 +2,18 @@
 
 namespace Modules\Project\Http\Controllers;
 
-use App\Media;
 use App\User;
+use App\Media;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Modules\Project\Entities\ProjectTask;
+use Illuminate\Support\Facades\Notification;
 use Modules\Project\Entities\ProjectTaskComment;
 use Modules\Project\Notifications\NewCommentOnTaskNotification;
-use Notification;
 
 class TaskCommentController extends Controller
 {
@@ -48,7 +50,7 @@ class TaskCommentController extends Controller
             $project_comment = $project_task->comments()->create($input);
 
             $business_id = request()->session()->get('user.business_id');
-            
+
             if (!empty($request->get('file_name')[0])) {
                 $file_names = explode(',', $request->get('file_name')[0]);
                 Media::attachMediaToModel($project_comment, $business_id, $file_names);
@@ -70,13 +72,13 @@ class TaskCommentController extends Controller
                 $project_comment['body'] = strip_tags(__(
                     'project::lang.new_comment_on_task_notification',
                     [
-                    'commented_by' => $request->user()->user_full_name,
-                    'subject' => $project_task->subject,
-                    'task_id' => $project_task->task_id
+                        'commented_by' => $request->user()->user_full_name,
+                        'subject' => $project_task->subject,
+                        'task_id' => $project_task->task_id
                     ]
                 ));
                 $project_comment['link'] = action('\Modules\Project\Http\Controllers\ProjectController@show', ['id' => $project_task->project_id]);
-                
+
                 if (!empty($members)) {
                     $notifiable_users = User::find($members);
                     Notification::send($notifiable_users, new NewCommentOnTaskNotification($project_task, $project_comment));
@@ -85,7 +87,7 @@ class TaskCommentController extends Controller
 
             $comments[] = ProjectTaskComment::with('media', 'commentedBy')
                 ->findOrFail($project_comment->id);
-                            
+
             //dynamically view task comment
             $comment_html = View::make('project::task.partials.comment')
                 ->with(compact('comments'))
@@ -97,7 +99,7 @@ class TaskCommentController extends Controller
                 'msg' => __('lang_v1.success')
             ];
         } catch (Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
                 'success' => false,
@@ -147,7 +149,7 @@ class TaskCommentController extends Controller
                 $task_id = request()->get('task_id');
 
                 $comment = ProjectTaskComment::where('project_task_id', $task_id)
-                                ->findOrFail($id);
+                    ->findOrFail($id);
 
                 $comment->delete();
                 $comment->media()->delete();
@@ -157,7 +159,7 @@ class TaskCommentController extends Controller
                     'msg' => __('lang_v1.success')
                 ];
             } catch (Exception $e) {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
                 $output = [
                     'success' => false,
@@ -182,7 +184,7 @@ class TaskCommentController extends Controller
                 'msg' => __('lang_v1.success')
             ];
         } catch (Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
                 'success' => false,

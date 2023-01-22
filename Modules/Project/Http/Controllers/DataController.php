@@ -3,16 +3,16 @@
 namespace Modules\Project\Http\Controllers;
 
 use App\User;
-use App\Utils\ModuleUtil;
+use App\TaxRate;
 use App\Utils\Util;
+use App\Utils\ModuleUtil;
+use Nwidart\Menus\Facades\Menu;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Menu;
 use Modules\Project\Entities\Project;
+use Modules\Project\Utils\ProjectUtil;
 use Modules\Project\Entities\ProjectTask;
 use Modules\Project\Entities\ProjectTransaction;
-use Modules\Project\Utils\ProjectUtil;
-use App\TaxRate;
 
 class DataController extends Controller
 {
@@ -27,14 +27,14 @@ class DataController extends Controller
         if ($notification->type == 'Modules\Project\Notifications\NewProjectAssignedNotification') {
             $data = $notification->data;
             $project = Project::with('createdBy')
-                            ->find($data['project_id']);
+                ->find($data['project_id']);
 
             if (!empty($project)) {
                 $msg = __(
                     'project::lang.new_project_assgined_notification',
                     [
-                    'created_by' => $project->createdBy->user_full_name,
-                    'project' => $project->name
+                        'created_by' => $project->createdBy->user_full_name,
+                        'project' => $project->name
                     ]
                 );
 
@@ -51,16 +51,16 @@ class DataController extends Controller
         } elseif ($notification->type == 'Modules\Project\Notifications\NewTaskAssignedNotification') {
             $data = $notification->data;
             $task = ProjectTask::with('createdBy')
-                        ->where('project_id', $data['project_id'])
-                        ->find($data['project_task_id']);
+                ->where('project_id', $data['project_id'])
+                ->find($data['project_task_id']);
 
             if (!empty($task)) {
                 $msg = __(
                     'project::lang.new_task_assgined_notification',
                     [
-                    'created_by' => $task->createdBy->user_full_name,
-                    'subject' => $task->subject,
-                    'task_id' => $task->task_id
+                        'created_by' => $task->createdBy->user_full_name,
+                        'subject' => $task->subject,
+                        'task_id' => $task->task_id
                     ]
                 );
 
@@ -77,18 +77,18 @@ class DataController extends Controller
         } elseif ($notification->type == 'Modules\Project\Notifications\NewCommentOnTaskNotification') {
             $data = $notification->data;
             $task = ProjectTask::with('createdBy')
-                        ->where('project_id', $data['project_id'])
-                        ->find($data['project_task_id']);
+                ->where('project_id', $data['project_id'])
+                ->find($data['project_task_id']);
 
             if (!empty($task)) {
                 $user = User::find($data['commented_by']);
-            
+
                 $msg = __(
                     'project::lang.new_comment_on_task_notification',
                     [
-                    'commented_by' => $user->user_full_name,
-                    'subject' => $task->subject,
-                    'task_id' => $task->task_id
+                        'commented_by' => $user->user_full_name,
+                        'subject' => $task->subject,
+                        'task_id' => $task->task_id
                     ]
                 );
 
@@ -117,8 +117,8 @@ class DataController extends Controller
         $module_util = new ModuleUtil();
         $commonUtil = new Util();
         $is_admin = $commonUtil->is_admin(auth()->user(), $business_id);
-        
-        $is_project_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'project_module');
+
+        $is_project_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'project_module');
 
         if ($is_project_enabled) {
             Menu::modify(
@@ -127,10 +127,10 @@ class DataController extends Controller
                     $menu->url(
                         action('\Modules\Project\Http\Controllers\ProjectController@index') . '?project_view=list_view',
                         __('project::lang.project'),
-                        ['icon' => 'fa fa-project-diagram', 'active' => 
+                        ['icon' => 'fa fa-project-diagram', 'active' =>
                         request()->segment(1) == 'project' || request()->get('type') == 'project', 'style' => config('app.env') == 'demo' ? 'background-color: #e4186d !important;' : '']
                     )
-                    ->order(86);
+                        ->order(86);
                 }
             );
         }
@@ -205,11 +205,11 @@ class DataController extends Controller
     }
 
     /**
-    * Function to return Project module
-    * permission for doc & note if notable type
-    * and notable id validates
-    * @return array
-    */
+     * Function to return Project module
+     * permission for doc & note if notable type
+     * and notable id validates
+     * @return array
+     */
     public function addDocumentAndNotes($params)
     {
         $permissions = [];
@@ -248,9 +248,9 @@ class DataController extends Controller
     }
 
     /**
-    * Function to add project module taxonomies
-    * @return array
-    */
+     * Function to add project module taxonomies
+     * @return array
+     */
     public function addTaxonomies()
     {
         $business_id = request()->session()->get('user.business_id');
@@ -281,7 +281,7 @@ class DataController extends Controller
     {
         $module_util = new ModuleUtil();
         $business_id = session()->get('user.business_id');
-        $is_subscribed_project = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'project_module');
+        $is_subscribed_project = (bool)$module_util->hasThePermissionInSubscription($business_id, 'project_module');
 
         if ($is_subscribed_project) {
             //for multiple tab just add another array of tab details and if js is in common file just include once in any array
@@ -315,13 +315,13 @@ class DataController extends Controller
         $business_id = session()->get('user.business_id');
         $taxes = TaxRate::forBusiness($business_id);
 
-        $query = ProjectTransaction::with(['invoiceLines' => function($q){
-                    $q->whereNotNull('pjt_invoice_lines.tax_rate_id');
-                }])
-                ->where('transactions.business_id', $business_id)
-                ->where('transactions.type', 'sell')
-                ->where('transactions.sub_type', 'project_invoice')
-                ->where('transactions.status', 'final');
+        $query = ProjectTransaction::with(['invoiceLines' => function ($q) {
+            $q->whereNotNull('pjt_invoice_lines.tax_rate_id');
+        }])
+            ->where('transactions.business_id', $business_id)
+            ->where('transactions.type', 'sell')
+            ->where('transactions.sub_type', 'project_invoice')
+            ->where('transactions.status', 'final');
 
 
         if (!empty($start_date) && !empty($end_date)) {

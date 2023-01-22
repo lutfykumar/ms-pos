@@ -4,12 +4,13 @@ namespace Modules\Woocommerce\Providers;
 
 use App\Business;
 use App\Utils\ModuleUtil;
-use Illuminate\Console\Scheduling\Schedule;
-
-use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Support\Facades\View;
 
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
+
+use Illuminate\Database\Eloquent\Factory;
+use Illuminate\Console\Scheduling\Schedule;
 
 class WoocommerceServiceProvider extends ServiceProvider
 {
@@ -41,7 +42,7 @@ class WoocommerceServiceProvider extends ServiceProvider
                 $__is_woo_enabled = $module_util->isModuleInstalled('Woocommerce');
             } else {
                 $business_id = session()->get('user.business_id');
-                $__is_woo_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'woocommerce_module', 'superadmin_package');
+                $__is_woo_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'woocommerce_module', 'superadmin_package');
             }
 
             $view->with(compact('__is_woo_enabled'));
@@ -68,10 +69,10 @@ class WoocommerceServiceProvider extends ServiceProvider
     protected function registerConfig()
     {
         $this->publishes([
-            __DIR__.'/../Config/config.php' => config_path('woocommerce.php'),
+            __DIR__ . '/../Config/config.php' => config_path('woocommerce.php'),
         ], 'config');
         $this->mergeConfigFrom(
-            __DIR__.'/../Config/config.php',
+            __DIR__ . '/../Config/config.php',
             'woocommerce'
         );
     }
@@ -85,7 +86,7 @@ class WoocommerceServiceProvider extends ServiceProvider
     {
         $viewPath = resource_path('views/modules/woocommerce');
 
-        $sourcePath = __DIR__.'/../Resources/views';
+        $sourcePath = __DIR__ . '/../Resources/views';
 
         $this->publishes([
             $sourcePath => $viewPath
@@ -93,7 +94,7 @@ class WoocommerceServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(array_merge(array_map(function ($path) {
             return $path . '/modules/woocommerce';
-        }, \Config::get('view.paths')), [$sourcePath]), 'woocommerce');
+        }, Config::get('view.paths')), [$sourcePath]), 'woocommerce');
     }
 
     /**
@@ -108,7 +109,7 @@ class WoocommerceServiceProvider extends ServiceProvider
         if (is_dir($langPath)) {
             $this->loadTranslationsFrom($langPath, 'woocommerce');
         } else {
-            $this->loadTranslationsFrom(__DIR__ .'/../Resources/lang', 'woocommerce');
+            $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', 'woocommerce');
         }
     }
 
@@ -119,7 +120,7 @@ class WoocommerceServiceProvider extends ServiceProvider
      */
     public function registerFactories()
     {
-        if (! app()->environment('production')) {
+        if (!app()->environment('production')) {
             app(Factory::class)->load(__DIR__ . '/../Database/factories');
         }
     }
@@ -152,7 +153,7 @@ class WoocommerceServiceProvider extends ServiceProvider
         $env = config('app.env');
         $module_util = new ModuleUtil();
         $is_installed = $module_util->isModuleInstalled(config('woocommerce.name'));
-        
+
         if ($env === 'live' && $is_installed) {
             $businesses = Business::whereNotNull('woocommerce_api_settings')->get();
 

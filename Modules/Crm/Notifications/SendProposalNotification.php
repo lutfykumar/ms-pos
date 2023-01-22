@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class SendProposalNotification extends Notification
+class SendProposalNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -44,15 +44,15 @@ class SendProposalNotification extends Notification
     public function toMail($notifiable)
     {
         $mail = (new MailMessage)
-                ->subject($this->proposal->subject)
-                ->view(
-                    'emails.plain_html',
-                    ['content' => $this->proposal->body]
-                );
-                
+            ->subject($this->proposal->subject)
+            ->view(
+                'emails.plain_html',
+                ['content' => $this->proposal->body]
+            );
+
         if ($this->media->count() > 0) {
             foreach ($this->media as $media) {
-                $mail->attach(public_path('uploads').'/media/'.$media->file_name, ['as' => $media->display_name]);
+                $mail->attach(public_path('uploads') . '/media/' . $media->file_name, ['as' => $media->display_name]);
             }
         }
         return $mail;

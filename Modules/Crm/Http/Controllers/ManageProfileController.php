@@ -3,11 +3,12 @@
 
 namespace Modules\Crm\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Media;
 use App\User;
+use App\Media;
 use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 
 class ManageProfileController extends Controller
@@ -77,15 +78,17 @@ class ManageProfileController extends Controller
             $input['business_id'] = $business_id;
             session()->put('user', $input);
 
-            $output = ['success' => 1,
-                        'msg' => __('lang_v1.profile_updated_successfully')
-                    ];
+            $output = [
+                'success' => 1,
+                'msg' => __('lang_v1.profile_updated_successfully')
+            ];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => 0,
-                        'msg' => __('messages.something_went_wrong')
-                    ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => 0,
+                'msg' => __('messages.something_went_wrong')
+            ];
         }
 
         return redirect()->back()->with(['status' => $output]);
@@ -101,28 +104,31 @@ class ManageProfileController extends Controller
         if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module'))) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         try {
             $user_id = $request->session()->get('user.id');
             $user = User::where('id', $user_id)->first();
-            
+
             if (Hash::check($request->input('current_password'), $user->password)) {
                 $user->password = Hash::make($request->input('new_password'));
                 $user->save();
-                $output = ['success' => 1,
-                            'msg' =>  __('lang_v1.password_updated_successfully')
-                        ];
+                $output = [
+                    'success' => 1,
+                    'msg' =>  __('lang_v1.password_updated_successfully')
+                ];
             } else {
-                $output = ['success' => 0,
-                            'msg' => __('lang_v1.u_have_entered_wrong_password')
-                        ];
+                $output = [
+                    'success' => 0,
+                    'msg' => __('lang_v1.u_have_entered_wrong_password')
+                ];
             }
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => 0,
-                            'msg' => __('messages.something_went_wrong')
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => 0,
+                'msg' => __('messages.something_went_wrong')
+            ];
         }
         return redirect()->back()->with(['status' => $output]);
     }

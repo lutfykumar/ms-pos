@@ -78,7 +78,7 @@ return [
      */
 
     'download'      => [
-        'prefix'    => 'laravel-',
+        'prefix'    => 'ms-pos-',
 
         'extension' => 'log',
     ],

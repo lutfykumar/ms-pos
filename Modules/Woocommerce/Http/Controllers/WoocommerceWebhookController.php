@@ -6,11 +6,12 @@ use App\Business;
 use App\Transaction;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
-use App\Utils\TransactionUtil;
-use DB;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use App\Utils\TransactionUtil;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Modules\Woocommerce\Utils\WoocommerceUtil;
 
 class WoocommerceWebhookController extends Controller
@@ -66,7 +67,7 @@ class WoocommerceWebhookController extends Controller
 
                 DB::beginTransaction();
                 $created = $this->woocommerceUtil->createNewSaleFromOrder($business_id, $user_id, $order_data, $business_data);
-                
+
                 $create_error_data = $created !== true ? $created : [];
                 $created_data[] = $order_data->number;
 
@@ -78,7 +79,7 @@ class WoocommerceWebhookController extends Controller
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
         }
     }
 
@@ -95,7 +96,7 @@ class WoocommerceWebhookController extends Controller
             $is_valid_request = $this->isValidWebhookRequest($request, $business->woocommerce_wh_ou_secret);
 
             if (!$is_valid_request) {
-                \Log::emergency("Woocommerce webhook signature mismatch");
+                Log::emergency("Woocommerce webhook signature mismatch");
             } else {
                 $user_id = $business->owner->id;
                 $woocommerce_api_settings = $this->woocommerceUtil->get_api_settings($business_id);
@@ -108,9 +109,9 @@ class WoocommerceWebhookController extends Controller
                 $order_data = json_decode($payload);
 
                 $sell = Transaction::where('business_id', $business_id)
-                                ->where('woocommerce_order_id', $order_data->id)
-                                ->with('sell_lines', 'sell_lines.product', 'payment_lines')
-                                ->first();
+                    ->where('woocommerce_order_id', $order_data->id)
+                    ->with('sell_lines', 'sell_lines.product', 'payment_lines')
+                    ->first();
 
                 if (!empty($sell)) {
                     DB::beginTransaction();
@@ -129,7 +130,7 @@ class WoocommerceWebhookController extends Controller
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
         }
     }
 
@@ -146,7 +147,7 @@ class WoocommerceWebhookController extends Controller
             $is_valid_request = $this->isValidWebhookRequest($request, $business->woocommerce_wh_od_secret);
 
             if (!$is_valid_request) {
-                \Log::emergency("Woocommerce webhook signature mismatch");
+                Log::emergency("Woocommerce webhook signature mismatch");
             } else {
                 $user_id = $business->owner->id;
                 //$woocommerce_api_settings = $this->woocommerceUtil->get_api_settings($business_id);
@@ -154,9 +155,9 @@ class WoocommerceWebhookController extends Controller
                 $order_data = json_decode($payload);
 
                 $transaction = Transaction::where('business_id', $business_id)
-                                ->where('woocommerce_order_id', $order_data->id)
-                                ->with('sell_lines')
-                                ->first();
+                    ->where('woocommerce_order_id', $order_data->id)
+                    ->with('sell_lines')
+                    ->first();
 
                 $log_data[] = $transaction->invoice_no;
 
@@ -178,10 +179,11 @@ class WoocommerceWebhookController extends Controller
                     //Update product stock
                     $this->productUtil->adjustProductStockForInvoice($status_before, $transaction, $input);
 
-                    $business = ['id' => $business_id,
-                                'accounting_method' => $business->accounting_method,
-                                'location_id' => $transaction->location_id
-                            ];
+                    $business = [
+                        'id' => $business_id,
+                        'accounting_method' => $business->accounting_method,
+                        'location_id' => $transaction->location_id
+                    ];
                     $this->transactionUtil->adjustMappingPurchaseSell($status_before, $transaction, $business);
                 }
 
@@ -194,7 +196,7 @@ class WoocommerceWebhookController extends Controller
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
         }
     }
 
@@ -211,7 +213,7 @@ class WoocommerceWebhookController extends Controller
             $is_valid_request = $this->isValidWebhookRequest($request, $business->woocommerce_wh_or_secret);
 
             if (!$is_valid_request) {
-                \Log::emergency("Woocommerce webhook signature mismatch");
+                Log::emergency("Woocommerce webhook signature mismatch");
             } else {
                 $user_id = $business->owner->id;
                 $woocommerce_api_settings = $this->woocommerceUtil->get_api_settings($business_id);
@@ -224,9 +226,9 @@ class WoocommerceWebhookController extends Controller
 
                 $order_data = json_decode($payload);
                 $sell = Transaction::where('business_id', $business_id)
-                                ->where('woocommerce_order_id', $order_data->id)
-                                ->with('sell_lines', 'sell_lines.product', 'payment_lines')
-                                ->first();
+                    ->where('woocommerce_order_id', $order_data->id)
+                    ->with('sell_lines', 'sell_lines.product', 'payment_lines')
+                    ->first();
 
                 DB::beginTransaction();
                 //If sell not deleted restore from draft else create new sale
@@ -242,7 +244,7 @@ class WoocommerceWebhookController extends Controller
                     }
                 } else {
                     $created = $this->woocommerceUtil->createNewSaleFromOrder($business_id, $user_id, $order_data, $business_data);
-                
+
                     $create_error_data = $created !== true ? $created : [];
                     $created_data[] = $order_data->number;
 
@@ -256,7 +258,7 @@ class WoocommerceWebhookController extends Controller
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
         }
     }
 

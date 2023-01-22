@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+
 Route::post(
     '/webhook/order-created/{business_id}',
     'Modules\Woocommerce\Http\Controllers\WoocommerceWebhookController@orderCreated'
@@ -21,7 +23,7 @@ Route::group(['middleware' => ['web', 'SetSessionData', 'auth', 'language', 'tim
     Route::get('/install', 'InstallController@index');
     Route::get('/install/update', 'InstallController@update');
     Route::get('/install/uninstall', 'InstallController@uninstall');
-    
+
     Route::get('/', 'WoocommerceController@index');
     Route::get('/api-settings', 'WoocommerceController@apiSettings');
     Route::post('/update-api-settings', 'WoocommerceController@updateSettings');

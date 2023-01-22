@@ -2,18 +2,19 @@
 
 namespace Modules\Essentials\Http\Controllers;
 
+use App\User;
+use App\Category;
+use Carbon\Carbon;
+use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use App\Utils\TransactionUtil;
 use Illuminate\Routing\Controller;
+use Modules\Essentials\Utils\EssentialsUtil;
 use Modules\Essentials\Entities\EssentialsLeave;
 use Modules\Essentials\Entities\EssentialsHoliday;
 use Modules\Essentials\Entities\EssentialsAttendance;
-use App\User;
-use App\Category;
-use App\Utils\ModuleUtil;
 use Modules\Essentials\Entities\EssentialsUserSalesTarget;
-use Modules\Essentials\Utils\EssentialsUtil;
-use App\Utils\TransactionUtil;
 
 class DashboardController extends Controller
 {
@@ -31,10 +32,11 @@ class DashboardController extends Controller
      * @param ModuleUtil $moduleUtil
      * @return void
      */
-    public function __construct(ModuleUtil $moduleUtil, 
+    public function __construct(
+        ModuleUtil $moduleUtil,
         EssentialsUtil $essentialsUtil,
-        TransactionUtil $transactionUtil)
-    {
+        TransactionUtil $transactionUtil
+    ) {
         $this->moduleUtil = $moduleUtil;
         $this->essentialsUtil = $essentialsUtil;
         $this->transactionUtil = $transactionUtil;
@@ -53,32 +55,32 @@ class DashboardController extends Controller
         $user_id = auth()->user()->id;
 
         $users = User::where('business_id', $business_id)
-                    ->user()
-                    ->get();
+            ->user()
+            ->get();
 
         $departments = Category::where('business_id', $business_id)
-                            ->where('category_type', 'hrm_department')
-                            ->get();
+            ->where('category_type', 'hrm_department')
+            ->get();
         $users_by_dept = $users->groupBy('essentials_department_id');
 
-        $today = new \Carbon('today');
+        $today = new Carbon('today');
 
-        $one_month_from_today = \Carbon::now()->addMonth();
+        $one_month_from_today = Carbon::now()->addMonth();
         $leaves = EssentialsLeave::where('business_id', $business_id)
-                            ->where('status', 'approved')
-                            ->whereDate('end_date', '>=', $today->format('Y-m-d'))
-                            ->whereDate('start_date', '<=', $one_month_from_today->format('Y-m-d'))
-                            ->with(['user', 'leave_type'])
-                            ->orderBy('start_date', 'asc')
-                            ->get();
+            ->where('status', 'approved')
+            ->whereDate('end_date', '>=', $today->format('Y-m-d'))
+            ->whereDate('start_date', '<=', $one_month_from_today->format('Y-m-d'))
+            ->with(['user', 'leave_type'])
+            ->orderBy('start_date', 'asc')
+            ->get();
 
         $todays_leaves = [];
         $upcoming_leaves = [];
 
         $users_leaves = [];
         foreach ($leaves as $leave) {
-            $leave_start = \Carbon::parse($leave->start_date);
-            $leave_end = \Carbon::parse($leave->end_date);
+            $leave_start = Carbon::parse($leave->start_date);
+            $leave_end = Carbon::parse($leave->end_date);
 
             if ($today->gte($leave_start) && $today->lte($leave_end)) {
                 $todays_leaves[] = $leave;
@@ -88,19 +90,21 @@ class DashboardController extends Controller
                 }
             } else if ($today->lt($leave_start) && $leave_start->lte($one_month_from_today)) {
                 $upcoming_leaves[] = $leave;
-                
+
                 if ($leave->user_id == $user_id) {
                     $users_leaves[] = $leave;
                 }
             }
         }
 
-        $holidays_query = EssentialsHoliday::where('essentials_holidays.business_id', 
-                                $business_id)
-                                ->whereDate('end_date', '>=', $today->format('Y-m-d'))
-                                ->whereDate('start_date', '<=', $one_month_from_today->format('Y-m-d'))
-                                ->orderBy('start_date', 'asc')
-                                ->with(['location']);
+        $holidays_query = EssentialsHoliday::where(
+            'essentials_holidays.business_id',
+            $business_id
+        )
+            ->whereDate('end_date', '>=', $today->format('Y-m-d'))
+            ->whereDate('start_date', '<=', $one_month_from_today->format('Y-m-d'))
+            ->orderBy('start_date', 'asc')
+            ->with(['location']);
 
         $permitted_locations = auth()->user()->permitted_locations();
         if ($permitted_locations != 'all') {
@@ -115,8 +119,8 @@ class DashboardController extends Controller
         $upcoming_holidays = [];
 
         foreach ($holidays as $holiday) {
-            $holiday_start = \Carbon::parse($holiday->start_date);
-            $holiday_end = \Carbon::parse($holiday->end_date);
+            $holiday_start = Carbon::parse($holiday->start_date);
+            $holiday_end = Carbon::parse($holiday->end_date);
 
             if ($today->gte($holiday_start) && $today->lte($holiday_end)) {
                 $todays_holidays[] = $holiday;
@@ -128,33 +132,33 @@ class DashboardController extends Controller
         $todays_attendances = [];
         if ($is_admin) {
             $todays_attendances = EssentialsAttendance::where('business_id', $business_id)
-                                ->whereDate('clock_in_time', \Carbon::now()->format('Y-m-d'))
-                                ->with(['employee'])
-                                ->orderBy('clock_in_time', 'asc')
-                                ->get();
+                ->whereDate('clock_in_time', Carbon::now()->format('Y-m-d'))
+                ->with(['employee'])
+                ->orderBy('clock_in_time', 'asc')
+                ->get();
         }
 
         $settings = $this->essentialsUtil->getEssentialsSettings();
 
         $sales_targets = EssentialsUserSalesTarget::where('user_id', $user_id)
-                                            ->get();
+            ->get();
 
-        $start_date = \Carbon::today()->startOfMonth()->format('Y-m-d');
-        $end_date = \Carbon::today()->endOfMonth()->format('Y-m-d');
+        $start_date = Carbon::today()->startOfMonth()->format('Y-m-d');
+        $end_date = Carbon::today()->endOfMonth()->format('Y-m-d');
 
         $sale_totals = $this->transactionUtil->getUserTotalSales($business_id, $user_id, $start_date, $end_date);
 
         $target_achieved_this_month = !empty($settings['calculate_sales_target_commission_without_tax']) && $settings['calculate_sales_target_commission_without_tax'] == 1 ? $sale_totals['total_sales_without_tax'] : $sale_totals['total_sales'];
 
-        $start_date = \Carbon::parse('first day of last month')->format('Y-m-d');
-        $end_date = \Carbon::parse('last day of last month')->format('Y-m-d');
+        $start_date = Carbon::parse('first day of last month')->format('Y-m-d');
+        $end_date = Carbon::parse('last day of last month')->format('Y-m-d');
 
         $sale_totals = $this->transactionUtil->getUserTotalSales($business_id, $user_id, $start_date, $end_date);
 
         $target_achieved_last_month = !empty($settings['calculate_sales_target_commission_without_tax']) && $settings['calculate_sales_target_commission_without_tax'] == 1 ? $sale_totals['total_sales_without_tax'] : $sale_totals['total_sales'];
 
         return view('essentials::dashboard.hrm_dashboard')
-                ->with(compact('users', 'departments', 'users_by_dept', 'todays_holidays', 'todays_leaves', 'upcoming_leaves', 'is_admin', 'users_leaves', 'upcoming_holidays', 'todays_attendances', 'sales_targets', 'target_achieved_this_month', 'target_achieved_last_month'));
+            ->with(compact('users', 'departments', 'users_by_dept', 'todays_holidays', 'todays_leaves', 'upcoming_leaves', 'is_admin', 'users_leaves', 'upcoming_holidays', 'todays_attendances', 'sales_targets', 'target_achieved_this_month', 'target_achieved_last_month'));
     }
 
     /**

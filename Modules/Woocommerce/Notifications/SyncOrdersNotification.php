@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class SyncOrdersNotification extends Notification
+class SyncOrdersNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -50,7 +50,6 @@ class SyncOrdersNotification extends Notification
      */
     public function toDatabase($notifiable)
     {
-        return [
-        ];
+        return [];
     }
 }

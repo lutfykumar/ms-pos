@@ -2,18 +2,22 @@
 
 namespace Modules\Connector\Http\Controllers;
 
+use Exception;
+use App\Utils\Util;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Routing\Controller;
 use Laravel\Passport\Passport;
-use Illuminate\Support\Str;
-use Yajra\DataTables\Facades\DataTables;
-use App\Utils\Util;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Artisan;
+use Yajra\DataTables\Facades\DataTables;
 
 class ClientController extends Controller
 {
-    public function __construct(Util $util) {
+    protected $util;
+    public function __construct(Util $util)
+    {
         $this->util = $util;
     }
 
@@ -31,12 +35,12 @@ class ClientController extends Controller
 
         $business_id = request()->session()->get('user.business_id');
         $clients = Passport::client()
-                    ->leftJoin('users as u', 'oauth_clients.user_id', '=', 'u.id')
-                    ->where('u.business_id', $business_id)
-                    ->where('password_client', 1)
-                    ->select('oauth_clients.*')
-                    ->get()
-                    ->makeVisible('secret');
+            ->leftJoin('users as u', 'oauth_clients.user_id', '=', 'u.id')
+            ->where('u.business_id', $business_id)
+            ->where('password_client', 1)
+            ->select('oauth_clients.*')
+            ->get()
+            ->makeVisible('secret');
 
         return view('connector::clients.index')->with(compact('clients', 'is_demo'));
     }
@@ -74,15 +78,17 @@ class ClientController extends Controller
 
             $client->save();
 
-            $output = ['success' => true,
-                            'msg' => __("lang_v1.added_success")
-                        ];
+            $output = [
+                'success' => true,
+                'msg' => __("lang_v1.added_success")
+            ];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => false,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => false,
+                'msg' => __("messages.something_went_wrong")
+            ];
         }
 
         return redirect()->back()->with('status', $output);
@@ -129,21 +135,23 @@ class ClientController extends Controller
         if (!auth()->user()->can('superadmin')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         $business_id = request()->session()->get('user.business_id');
         $clients = Passport::client()
-                        ->leftJoin('users as u', 'oauth_clients.user_id', '=', 'u.id')
-                        ->where('u.business_id', $business_id)
-                        ->where('oauth_clients.id', $id)
-                        ->delete();
+            ->leftJoin('users as u', 'oauth_clients.user_id', '=', 'u.id')
+            ->where('u.business_id', $business_id)
+            ->where('oauth_clients.id', $id)
+            ->delete();
 
-        $output = ['success' => true,
-                            'msg' => __("lang_v1.deleted_success")
-                        ];
+        $output = [
+            'success' => true,
+            'msg' => __("lang_v1.deleted_success")
+        ];
         return redirect()->back()->with('status', $output);
     }
 
-    public function regenerate(){
+    public function regenerate()
+    {
         if (!auth()->user()->can('superadmin')) {
             abort(403, 'Unauthorized action.');
         }
@@ -152,16 +160,17 @@ class ClientController extends Controller
             Artisan::call('passport:install --force');
             Artisan::call('apidoc:generate');
 
-            $output = ['success' => 1,
-                    'msg' => __("lang_v1.success")
-                ];
-
+            $output = [
+                'success' => 1,
+                'msg' => __("lang_v1.success")
+            ];
         } catch (Exception $e) {
-            $output = ['success' => 1,
-                    'msg' => $e->getMessage()
-                ];
+            $output = [
+                'success' => 1,
+                'msg' => $e->getMessage()
+            ];
         }
-        
+
         return redirect()->back()->with('status', $output);
     }
 }

@@ -8,10 +8,11 @@ use Illuminate\Http\Response;
 
 use Illuminate\Routing\Controller;
 
-use Modules\Repair\Entities\RepairStatus;
+use Illuminate\Support\Facades\Log;
 
-use Yajra\DataTables\Facades\DataTables;
 use Modules\Repair\Utils\RepairUtil;
+use Yajra\DataTables\Facades\DataTables;
+use Modules\Repair\Entities\RepairStatus;
 
 class RepairStatusController extends Controller
 {
@@ -20,6 +21,7 @@ class RepairStatusController extends Controller
      *
      */
     protected $moduleUtil;
+    protected $repairUtil;
 
 
     /**
@@ -48,7 +50,7 @@ class RepairStatusController extends Controller
 
         if (request()->ajax()) {
             $statuses = RepairStatus::where('business_id', $business_id)
-                        ->select(['name', 'color', 'id', 'sort_order', 'is_completed_status']);
+                ->select(['name', 'color', 'id', 'sort_order', 'is_completed_status']);
 
             return Datatables::of($statuses)
                 ->editColumn('name', '
@@ -97,28 +99,32 @@ class RepairStatusController extends Controller
     public function store(Request $request)
     {
         $business_id = request()->session()->get('user.business_id');
-        
+
         if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && auth()->user()->can('repair_status.access')))) {
             abort(403, 'Unauthorized action.');
         }
 
         try {
-            $input = $request->only(['name', 'color', 'sort_order',
-                    'sms_template', 'email_subject', 'email_body']);
+            $input = $request->only([
+                'name', 'color', 'sort_order',
+                'sms_template', 'email_subject', 'email_body'
+            ]);
             $input['is_completed_status'] = !empty($request->get('is_completed_status')) ? 1 : 0;
             $input['business_id'] = $business_id;
 
             $status = RepairStatus::create($input);
 
-            $output = ['success' => true,
-                        'msg' => __("lang_v1.added_success")
-                    ];
+            $output = [
+                'success' => true,
+                'msg' => __("lang_v1.added_success")
+            ];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => false,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => false,
+                'msg' => __("messages.something_went_wrong")
+            ];
         }
 
         return $output;
@@ -131,7 +137,7 @@ class RepairStatusController extends Controller
     public function edit($id)
     {
         $business_id = request()->session()->get('user.business_id');
-        
+
         if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && auth()->user()->can('repair_status.access')))) {
             abort(403, 'Unauthorized action.');
         }
@@ -153,28 +159,32 @@ class RepairStatusController extends Controller
     public function update(Request $request, $id)
     {
         $business_id = request()->session()->get('user.business_id');
-        
+
         if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && auth()->user()->can('repair_status.access')))) {
             abort(403, 'Unauthorized action.');
         }
 
         if (request()->ajax()) {
             try {
-                $input = $request->only(['name', 'color', 'sort_order',
-                    'sms_template', 'email_subject', 'email_body']);
+                $input = $request->only([
+                    'name', 'color', 'sort_order',
+                    'sms_template', 'email_subject', 'email_body'
+                ]);
                 $input['is_completed_status'] = !empty($request->get('is_completed_status')) ? 1 : 0;
                 $status = RepairStatus::where('business_id', $business_id)->findOrFail($id);
                 $status->update($input);
 
-                $output = ['success' => true,
-                            'msg' => __("lang_v1.updated_success")
-                            ];
+                $output = [
+                    'success' => true,
+                    'msg' => __("lang_v1.updated_success")
+                ];
             } catch (\Exception $e) {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-                $output = ['success' => false,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
+                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+                $output = [
+                    'success' => false,
+                    'msg' => __("messages.something_went_wrong")
+                ];
             }
 
             return $output;

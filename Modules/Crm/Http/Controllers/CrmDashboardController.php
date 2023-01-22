@@ -2,11 +2,12 @@
 
 namespace Modules\Crm\Http\Controllers;
 
+use App\Contact;
+use App\Category;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
-use App\Contact;
-use App\Category;
 use Modules\Crm\Entities\CrmContact;
 
 class CrmDashboardController extends Controller
@@ -20,8 +21,8 @@ class CrmDashboardController extends Controller
         $business_id = request()->session()->get('user.business_id');
 
         $contacts = Contact::where('business_id', $business_id)
-                    ->Active()
-                    ->get();
+            ->Active()
+            ->get();
 
         $customers = $contacts->whereIn('type', ['customer', 'both']);
 
@@ -31,19 +32,19 @@ class CrmDashboardController extends Controller
 
         $total_leads = $leads->count();
         $sources = Category::where('business_id', $business_id)
-                                ->where('category_type', 'source')
-                                ->get();
+            ->where('category_type', 'source')
+            ->get();
         $total_sources = $sources->count();
 
         $life_stages = Category::where('business_id', $business_id)
-                                ->where('category_type', 'life_stage')
-                                ->get();
+            ->where('category_type', 'life_stage')
+            ->get();
 
         $total_life_stage = $life_stages->count();
         $leads_by_life_stage = $leads->groupBy('crm_life_stage');
 
         $contacts_count_by_source = CrmContact::getContactsCountBySourceOfGivenTyps($business_id);
-        
+
         $leads_count_by_source = CrmContact::getContactsCountBySourceOfGivenTyps($business_id, ['lead']);
 
         $customers_count_by_source = CrmContact::getContactsCountBySourceOfGivenTyps($business_id, ['customer', 'both']);
@@ -60,22 +61,22 @@ class CrmDashboardController extends Controller
         $todays_birthdays = [];
         $upcoming_birthdays = [];
 
-        $today = \Carbon::now();
-        $thirty_days_from_today = \Carbon::now()->addDays(30)->format('Y-m-d');
+        $today = Carbon::now();
+        $thirty_days_from_today = Carbon::now()->addDays(30)->format('Y-m-d');
         foreach ($contacts as $contact) {
-            if(empty($contact->dob)) continue;
-            
-            $dob = \Carbon::parse($contact->dob);
+            if (empty($contact->dob)) continue;
+
+            $dob = Carbon::parse($contact->dob);
             $dob_md = $dob->format('m-d');
 
-            $next_birthday = \Carbon::parse($today->format('Y') . '-' . $dob_md);
+            $next_birthday = Carbon::parse($today->format('Y') . '-' . $dob_md);
             if ($next_birthday->lt($today)) {
                 $next_birthday->addYear();
             }
 
             if ($today->format('m-d') == $dob->format('m-d')) {
                 $todays_birthdays[] = ['id' => $contact->id, 'name' => $contact->name];
-            } else if( $next_birthday->between($today->format('Y-m-d'), $thirty_days_from_today)) {
+            } else if ($next_birthday->between($today->format('Y-m-d'), $thirty_days_from_today)) {
                 $upcoming_birthdays[] = ['name' => $contact->name, 'id' => $contact->id, 'dob' => $dob->format('m-d')];
             }
         }

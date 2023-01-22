@@ -1,12 +1,13 @@
 <?php
+
 namespace Modules\Project\Utils;
 
 use App\User;
 use App\Utils\Util;
 use Modules\Project\Entities\Project;
-use Modules\Project\Notifications\NewProjectAssignedNotification;
+use Illuminate\Support\Facades\Notification;
 use Modules\Project\Notifications\NewTaskAssignedNotification;
-use Notification;
+use Modules\Project\Notifications\NewProjectAssignedNotification;
 
 class ProjectUtil extends Util
 {
@@ -19,12 +20,12 @@ class ProjectUtil extends Util
     public function generateTaskId($business_id, $project_id)
     {
         $project = Project::withCount('tasks')
-                        ->where('business_id', $business_id)
-                        ->findOrfail($project_id);
+            ->where('business_id', $business_id)
+            ->findOrfail($project_id);
 
         $task_id_prefix = !empty($project->settings['task_id_prefix']) ? $project->settings['task_id_prefix'] : '#';
 
-        return $task_id_prefix.($project->tasks_count + 1);
+        return $task_id_prefix . ($project->tasks_count + 1);
     }
 
     /**
@@ -37,7 +38,7 @@ class ProjectUtil extends Util
     public function isProjectLead($user_id, $project_id)
     {
         $project = Project::where('lead_id', $user_id)
-                    ->find($project_id);
+            ->find($project_id);
 
         return !empty($project);
     }
@@ -54,7 +55,7 @@ class ProjectUtil extends Util
         $project = Project::with(['members' => function ($query) use ($user_id) {
             $query->where('user_id', $user_id);
         }])
-        ->find($project_id);
+            ->find($project_id);
 
         return !empty($project->members);
     }
@@ -151,7 +152,7 @@ class ProjectUtil extends Util
     public function getProject($business_id, $project_id)
     {
         $project = Project::where('business_id', $business_id)
-                        ->find($project_id);
+            ->find($project_id);
 
         return $project;
     }

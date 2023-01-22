@@ -10,7 +10,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 class RecurringExpenseNotification extends Notification
 {
     use Queueable;
-
+    protected $expense;
     /**
      * Create a new notification instance.
      *

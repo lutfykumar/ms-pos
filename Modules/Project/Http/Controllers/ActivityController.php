@@ -6,11 +6,12 @@ use App\DocumentAndNote;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Modules\Project\Entities\Project;
+use Spatie\Activitylog\Models\Activity;
 use Modules\Project\Entities\ProjectTask;
 use Modules\Project\Entities\ProjectTimeLog;
-use Spatie\Activitylog\Models\Activity;
 
 class ActivityController extends Controller
 {
@@ -25,33 +26,33 @@ class ActivityController extends Controller
                 $project_id = request()->get('project_id');
                 $project = Project::findOrFail($project_id);
                 $activities = Activity::forSubject($project)
-                                ->orWhere(function ($query) use ($project) {
-                                    $query->where('subject_type', (new ProjectTask())->getMorphClass())
-                                    ->whereIn('subject_id', $project->tasks()->pluck('id'));
-                                })
-                                ->orWhere(function ($query) use ($project) {
-                                    $query->where('subject_type', (new DocumentAndNote())->getMorphClass())
-                                    ->whereIn('subject_id', $project->documentsAndnote()->pluck('id'));
-                                })
-                                ->orWhere(function ($query) use ($project) {
-                                    $query->where('subject_type', (new ProjectTimeLog())->getMorphClass())
-                                    ->whereIn('subject_id', $project->timeLogs()->pluck('id'));
-                                })
-                                ->with(['causer', 'subject'])
-                                ->latest()
-                                ->simplePaginate(10);
-                
+                    ->orWhere(function ($query) use ($project) {
+                        $query->where('subject_type', (new ProjectTask())->getMorphClass())
+                            ->whereIn('subject_id', $project->tasks()->pluck('id'));
+                    })
+                    ->orWhere(function ($query) use ($project) {
+                        $query->where('subject_type', (new DocumentAndNote())->getMorphClass())
+                            ->whereIn('subject_id', $project->documentsAndnote()->pluck('id'));
+                    })
+                    ->orWhere(function ($query) use ($project) {
+                        $query->where('subject_type', (new ProjectTimeLog())->getMorphClass())
+                            ->whereIn('subject_id', $project->timeLogs()->pluck('id'));
+                    })
+                    ->with(['causer', 'subject'])
+                    ->latest()
+                    ->simplePaginate(10);
+
                 $activities = View::make('project::activity.show')
-                                ->with(compact('activities'))
-                                ->render();
-                        
+                    ->with(compact('activities'))
+                    ->render();
+
                 $output = [
                     'success' => true,
                     'msg' => __('lang_v1.success'),
                     'activities' =>  $activities
                 ];
             } catch (Exception $e) {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
                 $output = [
                     'success' => false,

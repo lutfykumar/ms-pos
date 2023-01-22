@@ -2,28 +2,30 @@
 
 namespace Modules\Woocommerce\Http\Controllers;
 
-use App\Business;
-use App\BusinessLocation;
-use App\Category;
 use App\Media;
-use App\Product;
-use App\SellingPriceGroup;
 use App\System;
+use App\Product;
 use App\TaxRate;
-use App\Utils\ModuleUtil;
+use App\Business;
+use App\Category;
 use App\Variation;
+use Carbon\Carbon;
+use App\BusinessLocation;
+use App\Utils\ModuleUtil;
+use App\SellingPriceGroup;
 use App\VariationTemplate;
-use DB;
 use Illuminate\Http\Request;
 
 use Illuminate\Http\Response;
 
 use Illuminate\Routing\Controller;
-use Modules\Woocommerce\Entities\WoocommerceSyncLog;
+use Illuminate\Support\Facades\DB;
 
-use Modules\Woocommerce\Utils\WoocommerceUtil;
+use Illuminate\Support\Facades\Log;
 
 use Yajra\DataTables\Facades\DataTables;
+use Modules\Woocommerce\Utils\WoocommerceUtil;
+use Modules\Woocommerce\Entities\WoocommerceSyncLog;
 
 class WoocommerceController extends Controller
 {
@@ -58,10 +60,10 @@ class WoocommerceController extends Controller
             if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'woocommerce_module'))) {
                 abort(403, 'Unauthorized action.');
             }
-                
+
             $tax_rates = TaxRate::where('business_id', $business_id)
-                            ->get();
-                            
+                ->get();
+
             $woocommerce_tax_rates = ['' => __('messages.please_select')];
 
             $woocommerce_api_settings = $this->woocommerceUtil->get_api_settings($business_id);
@@ -69,9 +71,9 @@ class WoocommerceController extends Controller
             $alerts = [];
 
             $not_synced_cat_count = Category::where('business_id', $business_id)
-                                        ->whereNull('woocommerce_cat_id')
-                                        ->where('category_type', 'product')
-                                        ->count();
+                ->whereNull('woocommerce_cat_id')
+                ->where('category_type', 'product')
+                ->count();
 
             if (!empty($not_synced_cat_count)) {
                 $alerts['not_synced_cat'] = $not_synced_cat_count == 1 ? __('woocommerce::lang.one_cat_not_synced_alert') : __('woocommerce::lang.cat_not_sync_alert', ['count' => $not_synced_cat_count]);
@@ -80,20 +82,20 @@ class WoocommerceController extends Controller
             $cat_last_sync = $this->woocommerceUtil->getLastSync($business_id, 'categories', false);
             if (!empty($cat_last_sync)) {
                 $updated_cat_count = Category::where('business_id', $business_id)
-                                        ->whereNotNull('woocommerce_cat_id')
-                                        ->where('updated_at', '>', $cat_last_sync)
-                                        ->count();
+                    ->whereNotNull('woocommerce_cat_id')
+                    ->where('updated_at', '>', $cat_last_sync)
+                    ->count();
             }
-            
+
             if (!empty($updated_cat_count)) {
                 $alerts['updated_cat'] = $updated_cat_count == 1 ? __('woocommerce::lang.one_cat_updated_alert') : __('woocommerce::lang.cat_updated_alert', ['count' => $updated_cat_count]);
             }
 
             $products_last_synced = $this->woocommerceUtil->getLastSync($business_id, 'all_products', false);
             $query = Product::where('business_id', $business_id)
-                                        ->whereIn('type', ['single', 'variable'])
-                                        ->whereNull('woocommerce_product_id')
-                                        ->where('woocommerce_disable_sync', 0);
+                ->whereIn('type', ['single', 'variable'])
+                ->whereNull('woocommerce_product_id')
+                ->where('woocommerce_disable_sync', 0);
 
             if (!empty($woocommerce_api_settings->location_id)) {
                 $query->ForLocation($woocommerce_api_settings->location_id);
@@ -105,11 +107,11 @@ class WoocommerceController extends Controller
             }
             if (!empty($products_last_synced)) {
                 $updated_product_count = Product::where('business_id', $business_id)
-                                        ->whereNotNull('woocommerce_product_id')
-                                        ->where('woocommerce_disable_sync', 0)
-                                        ->whereIn('type', ['single', 'variable'])
-                                        ->where('updated_at', '>', $products_last_synced)
-                                        ->count();
+                    ->whereNotNull('woocommerce_product_id')
+                    ->where('woocommerce_disable_sync', 0)
+                    ->whereIn('type', ['single', 'variable'])
+                    ->where('updated_at', '>', $products_last_synced)
+                    ->count();
             }
 
             if (!empty($updated_product_count)) {
@@ -128,10 +130,10 @@ class WoocommerceController extends Controller
         } catch (\Exception $e) {
             $alerts['connection_failed'] = 'Unable to connect with WooCommerce, Check API settings';
         }
-        
+
 
         return view('woocommerce::woocommerce.index')
-                ->with(compact('tax_rates', 'woocommerce_tax_rates', 'alerts'));
+            ->with(compact('tax_rates', 'woocommerce_tax_rates', 'alerts'));
     }
 
     /**
@@ -159,7 +161,7 @@ class WoocommerceController extends Controller
         ];
 
         $price_groups = SellingPriceGroup::where('business_id', $business_id)
-                        ->pluck('name', 'id')->prepend(__('lang_v1.default'), '');
+            ->pluck('name', 'id')->prepend(__('lang_v1.default'), '');
 
         $business = Business::find($business_id);
 
@@ -187,7 +189,7 @@ class WoocommerceController extends Controller
         $shipping_statuses = $this->moduleUtil->shipping_statuses();
 
         return view('woocommerce::woocommerce.api_settings')
-                ->with(compact('default_settings', 'locations', 'price_groups', 'module_version', 'cron_job_command', 'business', 'shipping_statuses'));
+            ->with(compact('default_settings', 'locations', 'price_groups', 'module_version', 'cron_job_command', 'business', 'shipping_statuses'));
     }
 
     /**
@@ -223,15 +225,17 @@ class WoocommerceController extends Controller
             $business->woocommerce_wh_or_secret = $input['woocommerce_wh_or_secret'];
             $business->save();
 
-            $output = ['success' => 1,
-                            'msg' => trans("lang_v1.updated_succesfully")
-                        ];
+            $output = [
+                'success' => 1,
+                'msg' => trans("lang_v1.updated_succesfully")
+            ];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
-            $output = ['success' => 0,
-                            'msg' => trans("messages.something_went_wrong")
-                        ];
+            $output = [
+                'success' => 0,
+                'msg' => trans("messages.something_went_wrong")
+            ];
         }
 
         return redirect()->back()->with(['status' => $output]);
@@ -257,27 +261,30 @@ class WoocommerceController extends Controller
         try {
             DB::beginTransaction();
             $user_id = request()->session()->get('user.id');
-            
+
             $this->woocommerceUtil->syncCategories($business_id, $user_id);
 
             DB::commit();
 
-            $output = ['success' => 1,
-                            'msg' => __("woocommerce::lang.synced_successfully")
-                        ];
+            $output = [
+                'success' => 1,
+                'msg' => __("woocommerce::lang.synced_successfully")
+            ];
         } catch (\Exception $e) {
             DB::rollBack();
 
             if (get_class($e) == 'Modules\Woocommerce\Exceptions\WooCommerceError') {
-                $output = ['success' => 0,
-                            'msg' => $e->getMessage(),
-                        ];
+                $output = [
+                    'success' => 0,
+                    'msg' => $e->getMessage(),
+                ];
             } else {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
-                $output = ['success' => 0,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
+                $output = [
+                    'success' => 0,
+                    'msg' => __("messages.something_went_wrong")
+                ];
             }
         }
 
@@ -313,29 +320,32 @@ class WoocommerceController extends Controller
             $limit = 100;
             $all_products = $this->woocommerceUtil->syncProducts($business_id, $user_id, $sync_type, $limit, $offset);
             $total_products = count($all_products);
-            
+
             DB::commit();
             $msg = $total_products > 0 ?  __("woocommerce::lang.n_products_synced_successfully", ['count' => $total_products]) :  __("woocommerce::lang.synced_successfully");
-            $output = ['success' => 1,
-                            'msg' => $msg,
-                            'total_products' => $total_products
-                        ];
+            $output = [
+                'success' => 1,
+                'msg' => $msg,
+                'total_products' => $total_products
+            ];
         } catch (\Exception $e) {
             DB::rollBack();
 
             if (get_class($e) == 'Modules\Woocommerce\Exceptions\WooCommerceError') {
-                $output = ['success' => 0,
-                            'msg' => $e->getMessage(),
-                        ];
+                $output = [
+                    'success' => 0,
+                    'msg' => $e->getMessage(),
+                ];
             } else {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
-                $output = ['success' => 0,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
+                $output = [
+                    'success' => 0,
+                    'msg' => __("messages.something_went_wrong")
+                ];
             }
         }
-        
+
         return $output;
     }
 
@@ -358,27 +368,30 @@ class WoocommerceController extends Controller
         try {
             DB::beginTransaction();
             $user_id = request()->session()->get('user.id');
-           
+
             $this->woocommerceUtil->syncOrders($business_id, $user_id);
 
             DB::commit();
 
-            $output = ['success' => 1,
-                            'msg' => __("woocommerce::lang.synced_successfully")
-                        ];
+            $output = [
+                'success' => 1,
+                'msg' => __("woocommerce::lang.synced_successfully")
+            ];
         } catch (\Exception $e) {
             DB::rollBack();
 
             if (get_class($e) == 'Modules\Woocommerce\Exceptions\WooCommerceError') {
-                $output = ['success' => 0,
-                            'msg' => $e->getMessage(),
-                        ];
+                $output = [
+                    'success' => 0,
+                    'msg' => $e->getMessage(),
+                ];
             } else {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
-                $output = ['success' => 0,
-                            'msg' => __("messages.something_went_wrong"),
-                        ];
+                $output = [
+                    'success' => 0,
+                    'msg' => __("messages.something_went_wrong"),
+                ];
             }
         }
 
@@ -434,21 +447,23 @@ class WoocommerceController extends Controller
             foreach ($input['taxes'] as $key => $value) {
                 $value = !empty($value) ? $value : null;
                 TaxRate::where('business_id', $business_id)
-                        ->where('id', $key)
-                        ->update(['woocommerce_tax_rate_id' => $value]);
+                    ->where('id', $key)
+                    ->update(['woocommerce_tax_rate_id' => $value]);
             }
 
-            $output = ['success' => 1,
-                            'msg' => __("lang_v1.updated_succesfully")
-                        ];
+            $output = [
+                'success' => 1,
+                'msg' => __("lang_v1.updated_succesfully")
+            ];
         } catch (\Exception $e) {
             DB::rollBack();
 
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
-            $output = ['success' => 0,
-                        'msg' => __("messages.something_went_wrong"),
-                    ];
+            $output = [
+                'success' => 0,
+                'msg' => __("messages.something_went_wrong"),
+            ];
         }
 
         return redirect()->back()->with(['status' => $output]);
@@ -467,15 +482,15 @@ class WoocommerceController extends Controller
 
         if (request()->ajax()) {
             $logs = WoocommerceSyncLog::where('woocommerce_sync_logs.business_id', $business_id)
-                    ->leftjoin('users as U', 'U.id', '=', 'woocommerce_sync_logs.created_by')
-                    ->select([
-                        'woocommerce_sync_logs.created_at',
-                        'sync_type', 'operation_type',
-                        DB::raw("CONCAT(COALESCE(surname, ''), ' ', COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) as full_name"),
-                        'woocommerce_sync_logs.data',
-                        'woocommerce_sync_logs.details as log_details',
-                        'woocommerce_sync_logs.id as DT_RowId'
-                    ]);
+                ->leftjoin('users as U', 'U.id', '=', 'woocommerce_sync_logs.created_by')
+                ->select([
+                    'woocommerce_sync_logs.created_at',
+                    'sync_type', 'operation_type',
+                    DB::raw("CONCAT(COALESCE(surname, ''), ' ', COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) as full_name"),
+                    'woocommerce_sync_logs.data',
+                    'woocommerce_sync_logs.details as log_details',
+                    'woocommerce_sync_logs.id as DT_RowId'
+                ]);
             $sync_type = [];
             if (auth()->user()->can('woocommerce.syc_categories')) {
                 $sync_type[] = 'categories';
@@ -495,7 +510,7 @@ class WoocommerceController extends Controller
             return Datatables::of($logs)
                 ->editColumn('created_at', function ($row) {
                     $created_at = $this->woocommerceUtil->format_date($row->created_at, true);
-                    $for_humans = \Carbon::createFromFormat('Y-m-d H:i:s', $row->created_at)->diffForHumans();
+                    $for_humans = Carbon::createFromFormat('Y-m-d H:i:s', $row->created_at)->diffForHumans();
                     return $created_at . '<br><small>' . $for_humans . '</small>';
                 })
                 ->editColumn('sync_type', function ($row) {
@@ -556,11 +571,11 @@ class WoocommerceController extends Controller
 
         if (request()->ajax()) {
             $log = WoocommerceSyncLog::where('business_id', $business_id)
-                                            ->find($id);
+                ->find($id);
             $log_details = json_decode($log->details);
-            
+
             return view('woocommerce::woocommerce.partials.log_details')
-                    ->with(compact('log_details'));
+                ->with(compact('log_details'));
         }
     }
 
@@ -578,19 +593,21 @@ class WoocommerceController extends Controller
         if (request()->ajax()) {
             try {
                 Category::where('business_id', $business_id)
-                        ->update(['woocommerce_cat_id' => null]);
+                    ->update(['woocommerce_cat_id' => null]);
                 $user_id = request()->session()->get('user.id');
                 $this->woocommerceUtil->createSyncLog($business_id, $user_id, 'categories', 'reset', null);
 
-                $output = ['success' => 1,
-                            'msg' => __("woocommerce::lang.cat_reset_success"),
-                        ];
+                $output = [
+                    'success' => 1,
+                    'msg' => __("woocommerce::lang.cat_reset_success"),
+                ];
             } catch (\Exception $e) {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
-                $output = ['success' => 0,
-                            'msg' => __("messages.something_went_wrong"),
-                        ];
+                $output = [
+                    'success' => 0,
+                    'msg' => __("messages.something_went_wrong"),
+                ];
             }
 
             return $output;
@@ -612,39 +629,41 @@ class WoocommerceController extends Controller
             try {
                 //Update products table
                 Product::where('business_id', $business_id)
-                        ->update(['woocommerce_product_id' => null, 'woocommerce_media_id' => null]);
+                    ->update(['woocommerce_product_id' => null, 'woocommerce_media_id' => null]);
 
                 $product_ids = Product::where('business_id', $business_id)
-                                    ->pluck('id');
+                    ->pluck('id');
 
                 $product_ids = !empty($product_ids) ? $product_ids : [];
                 //Update variations table
                 Variation::whereIn('product_id', $product_ids)
-                        ->update([
-                            'woocommerce_variation_id' => null
-                        ]);
+                    ->update([
+                        'woocommerce_variation_id' => null
+                    ]);
 
                 //Update variation templates
                 VariationTemplate::where('business_id', $business_id)
-                                ->update([
-                                    'woocommerce_attr_id' => null
-                                ]);
+                    ->update([
+                        'woocommerce_attr_id' => null
+                    ]);
 
                 Media::where('business_id', $business_id)
-                        ->update(['woocommerce_media_id' => null]);
+                    ->update(['woocommerce_media_id' => null]);
 
                 $user_id = request()->session()->get('user.id');
                 $this->woocommerceUtil->createSyncLog($business_id, $user_id, 'all_products', 'reset', null);
 
-                $output = ['success' => 1,
-                            'msg' => __("woocommerce::lang.prod_reset_success"),
-                        ];
+                $output = [
+                    'success' => 1,
+                    'msg' => __("woocommerce::lang.prod_reset_success"),
+                ];
             } catch (\Exception $e) {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
-                $output = ['success' => 0,
-                            'msg' => "File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage(),
-                        ];
+                $output = [
+                    'success' => 0,
+                    'msg' => "File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage(),
+                ];
             }
 
             return $output;

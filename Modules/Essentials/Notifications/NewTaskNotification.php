@@ -4,9 +4,10 @@ namespace Modules\Essentials\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class NewTaskNotification extends Notification
+class NewTaskNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 

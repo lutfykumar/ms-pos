@@ -2,14 +2,14 @@
 
 namespace Modules\Crm\Http\Controllers;
 
-use App\Business;
-use App\Utils\ModuleUtil;
-use App\Utils\Util;
-use Modules\Crm\Utils\CrmUtil;
-use Illuminate\Routing\Controller;
-use Menu;
-use Modules\Crm\Entities\Schedule;
 use DB;
+use App\Business;
+use App\Utils\Util;
+use App\Utils\ModuleUtil;
+use Modules\Crm\Utils\CrmUtil;
+use Nwidart\Menus\Facades\Menu;
+use Illuminate\Routing\Controller;
+use Modules\Crm\Entities\Schedule;
 
 class DataController extends Controller
 {
@@ -26,8 +26,8 @@ class DataController extends Controller
         if ($notification->type == 'Modules\Crm\Notifications\ScheduleNotification') {
             $data = $notification->data;
             $schedule = Schedule::with('createdBy')
-                        ->where('business_id', $data['business_id'])
-                        ->find($data['schedule_id']);
+                ->where('business_id', $data['business_id'])
+                ->find($data['schedule_id']);
 
             if (!empty($schedule)) {
                 $business = Business::find($data['business_id']);
@@ -35,9 +35,9 @@ class DataController extends Controller
                 $msg = __(
                     'crm::lang.schedule_notification',
                     [
-                    'created_by' => $schedule->createdBy->user_full_name,
-                    'title' => $schedule->title,
-                    'startdatetime' => $startdatetime
+                        'created_by' => $schedule->createdBy->user_full_name,
+                        'title' => $schedule->title,
+                        'startdatetime' => $startdatetime
                     ]
                 );
 
@@ -61,8 +61,8 @@ class DataController extends Controller
     {
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
-        
-        $is_crm_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'crm_module');
+
+        $is_crm_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'crm_module');
 
         $commonUtil = new Util();
         $is_admin = $commonUtil->is_admin(auth()->user(), $business_id);
@@ -120,7 +120,7 @@ class DataController extends Controller
     {
         $module_util = new ModuleUtil();
         $business_id = request()->session()->get('user.business_id');
-        $is_crm_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'crm_module');
+        $is_crm_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'crm_module');
 
         if ($is_crm_enabled) {
             //for multiple tab just add another array of tab details and if js is in common file just include once in any array
@@ -138,18 +138,18 @@ class DataController extends Controller
     }
 
     /**
-    * Function to add essential module taxonomies
-    * @return array
-    */
+     * Function to add essential module taxonomies
+     * @return array
+     */
     public function addTaxonomies()
     {
         $module_util = new ModuleUtil();
         $business_id = request()->session()->get('user.business_id');
 
         $output = [
-                'source' => [],
-                'life_stage' => []
-            ];
+            'source' => [],
+            'life_stage' => []
+        ];
         if (!(auth()->user()->can('superadmin') || $module_util->hasThePermissionInSubscription($business_id, 'crm_module'))) {
             return $output;
         }
@@ -285,11 +285,11 @@ class DataController extends Controller
         }
 
         $query = Schedule::where('business_id', $data['business_id'])
-                        ->whereBetween(DB::raw('date(start_datetime)'), [$data['start_date'], $data['end_date']]);
+            ->whereBetween(DB::raw('date(start_datetime)'), [$data['start_date'], $data['end_date']]);
 
         if (!empty($data['user_id'])) {
-            $query->where( function($qry) use ($data) {
-                $qry->whereHas('users', function($q) use ($data){
+            $query->where(function ($qry) use ($data) {
+                $qry->whereHas('users', function ($q) use ($data) {
                     $q->where('user_id', $data['user_id']);
                 })->orWhere('created_by', $data['user_id']);
             });
@@ -322,7 +322,7 @@ class DataController extends Controller
     public function eventTypes()
     {
         return [
-            'schedule' => [ 
+            'schedule' => [
                 'label' => __('crm::lang.follow_ups'),
                 'color' => '#FEBE10',
             ]
@@ -332,7 +332,7 @@ class DataController extends Controller
     public function contact_form_part()
     {
         $path = 'crm::contact_login.partial.contact_form_part';
-        
+
         return  [
             'template_path' => $path,
             'template_data' => []
@@ -344,7 +344,7 @@ class DataController extends Controller
         $contact = $data['contact'];
         $input = $data['input'];
 
-        if(!empty($input['contact_persons'])) {
+        if (!empty($input['contact_persons'])) {
             $crmUtil = new CrmUtil;
 
             foreach ($input['contact_persons'] as $contact_person_data) {

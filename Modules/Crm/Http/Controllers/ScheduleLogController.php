@@ -2,13 +2,15 @@
 
 namespace Modules\Crm\Http\Controllers;
 
+use Exception;
 use App\Contact;
-use App\Http\Controllers\Controller;
-use App\Utils\ModuleUtil;
 use App\Utils\Util;
+use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\View;
 use Modules\Crm\Entities\Schedule;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\View;
 use Modules\Crm\Entities\ScheduleLog;
 
 class ScheduleLogController extends Controller
@@ -47,16 +49,16 @@ class ScheduleLogController extends Controller
         if (request()->ajax()) {
             try {
                 $schedule = Schedule::where('business_id', $business_id)
-                        ->findOrFail($schedule_id);
+                    ->findOrFail($schedule_id);
 
                 $schedule_logs = ScheduleLog::with('createdBy')
-                                ->where('schedule_id', $schedule_id)
-                                ->latest()
-                                ->simplePaginate(10);
+                    ->where('schedule_id', $schedule_id)
+                    ->latest()
+                    ->simplePaginate(10);
 
                 $logs_html = View::make('crm::schedule_log.partial.log')
-                                ->with(compact('schedule_logs'))
-                                ->render();
+                    ->with(compact('schedule_logs'))
+                    ->render();
 
                 $output = [
                     'success' => true,
@@ -64,7 +66,7 @@ class ScheduleLogController extends Controller
                     'log' =>  $logs_html
                 ];
             } catch (Exception $e) {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
                 $output = [
                     'success' => false,
@@ -89,7 +91,7 @@ class ScheduleLogController extends Controller
 
         $id = request()->get('schedule_id');
         $schedule = Schedule::where('business_id', $business_id)
-                        ->findOrFail($id);
+            ->findOrFail($id);
         $customers = Contact::customersDropdown($business_id, false);
         $statuses = Schedule::statusDropdown();
         return view('crm::schedule_log.create')
@@ -116,7 +118,7 @@ class ScheduleLogController extends Controller
             $input['created_by'] = $request->user()->id;
 
             $schedule = Schedule::where('business_id', $business_id)
-                        ->findOrFail($request->get('schedule_id'));
+                ->findOrFail($request->get('schedule_id'));
 
             //update schedule status
             if (!empty($request->input('status'))) {
@@ -131,7 +133,7 @@ class ScheduleLogController extends Controller
                 'msg' => __('lang_v1.success')
             ];
         } catch (Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
                 'success' => false,
@@ -157,8 +159,8 @@ class ScheduleLogController extends Controller
         $schedule_id = request()->get('schedule_id');
 
         $schedule_log = ScheduleLog::with('schedule')
-                        ->where('schedule_id', $schedule_id)
-                        ->findOrFail($id);
+            ->where('schedule_id', $schedule_id)
+            ->findOrFail($id);
 
         return view('crm::schedule_log.show')
             ->with(compact('schedule_log'));
@@ -180,10 +182,10 @@ class ScheduleLogController extends Controller
         $schedule_id = request()->get('schedule_id');
 
         $schedule = Schedule::where('business_id', $business_id)
-                        ->findOrFail($schedule_id);
+            ->findOrFail($schedule_id);
 
         $schedule_log = ScheduleLog::where('schedule_id', $schedule_id)
-                            ->findOrFail($id);
+            ->findOrFail($id);
 
         $customers = Contact::customersDropdown($business_id, false);
         $statuses = Schedule::statusDropdown();
@@ -213,12 +215,12 @@ class ScheduleLogController extends Controller
 
             $schedule_id = $request->get('schedule_id');
             $schedule_log = ScheduleLog::where('schedule_id', $schedule_id)
-                            ->findOrFail($id);
+                ->findOrFail($id);
 
             //update schedule status
             if (!empty($request->input('status'))) {
                 $schedule = Schedule::where('business_id', $business_id)
-                        ->findOrFail($schedule_id);
+                    ->findOrFail($schedule_id);
 
                 $schedule->status = $request->input('status');
                 $schedule->save();
@@ -231,7 +233,7 @@ class ScheduleLogController extends Controller
                 'msg' => __('lang_v1.success')
             ];
         } catch (Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
                 'success' => false,
@@ -253,12 +255,12 @@ class ScheduleLogController extends Controller
         if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module'))) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         if (request()->ajax()) {
             try {
                 $schedule_id = request()->get('schedule_id');
                 $schedule_log = ScheduleLog::where('schedule_id', $schedule_id)
-                                    ->findOrFail($id);
+                    ->findOrFail($id);
 
                 $schedule_log->delete();
 
@@ -267,7 +269,7 @@ class ScheduleLogController extends Controller
                     'msg' => __('lang_v1.success')
                 ];
             } catch (Exception $e) {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
                 $output = [
                     'success' => false,

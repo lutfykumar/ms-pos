@@ -2,29 +2,29 @@
 
 namespace Modules\Repair\Http\Controllers;
 
+use DB;
 use App\Brands;
 use App\Category;
+use App\Warranty;
 use App\Transaction;
 use App\Utils\ModuleUtil;
-use App\Warranty;
-use DB;
 use Illuminate\Http\Request;
+use Nwidart\Menus\Facades\Menu;
 use Illuminate\Routing\Controller;
-use Menu;
-use Modules\Repair\Entities\DeviceModel;
-use Modules\Repair\Entities\RepairStatus;
 use Modules\Repair\Utils\RepairUtil;
 use Modules\Repair\Entities\JobSheet;
+use Modules\Repair\Entities\DeviceModel;
+use Modules\Repair\Entities\RepairStatus;
 
 class DataController extends Controller
 {
 
-  /**
-   * Sets sell fields from module
-   * An input field with name "has_module_data" is required in the request to call this function
-   * @param array $data
-   * @return obj
-   */
+    /**
+     * Sets sell fields from module
+     * An input field with name "has_module_data" is required in the request to call this function
+     * @param array $data
+     * @return obj
+     */
     public function after_sale_saved($data)
     {
         $transaction = $data['transaction'];
@@ -56,16 +56,16 @@ class DataController extends Controller
 
         $transaction->repair_completed_on = !empty($input['repair_completed_on']) ? $repairUtil->uf_date($input['repair_completed_on'], true) : null;
         $transaction->repair_due_date = !empty($input['repair_due_date']) ? $repairUtil->uf_date($input['repair_due_date'], true) : null;
-        
+
         $transaction->save();
 
         return $transaction;
     }
 
     /**
-      * Defines user permissions for the module.
-      * @return array
-      */
+     * Defines user permissions for the module.
+     * @return array
+     */
     public function user_permissions()
     {
         return [
@@ -160,7 +160,7 @@ class DataController extends Controller
     {
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
-        $is_repair_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'repair_module');
+        $is_repair_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'repair_module');
 
         $background_color = '';
         if (config('app.env') == 'demo') {
@@ -170,11 +170,11 @@ class DataController extends Controller
         if ($is_repair_enabled && (auth()->user()->can('superadmin') || auth()->user()->can('repair.view') || auth()->user()->can('job_sheet.view_assigned') || auth()->user()->can('job_sheet.view_all'))) {
             Menu::modify('admin-sidebar-menu', function ($menu) use ($background_color) {
                 $menu->url(
-                            action('\Modules\Repair\Http\Controllers\DashboardController@index'),
-                            __('repair::lang.repair'),
-                            ['icon' => 'fa fas fa-wrench', 'active' => request()->segment(1) == 'repair', 'style' => 'background-color:'.$background_color]
-                        )
-                ->order(24);
+                    action('\Modules\Repair\Http\Controllers\DashboardController@index'),
+                    __('repair::lang.repair'),
+                    ['icon' => 'fa fas fa-wrench', 'active' => request()->segment(1) == 'repair', 'style' => 'background-color:' . $background_color]
+                )
+                    ->order(24);
             });
         }
     }
@@ -188,8 +188,8 @@ class DataController extends Controller
     {
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
-        $is_repair_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'repair_module');
-        
+        $is_repair_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'repair_module');
+
         if ($is_repair_enabled && (!is_null($params['sub_type']) && $params['sub_type'] == 'repair')) {
             $repairUtil = new RepairUtil();
             $repair_settings = $repairUtil->getRepairSettings($business_id);
@@ -213,7 +213,7 @@ class DataController extends Controller
             $parts = [];
             if (isset($params['job_sheet_id'])) {
                 $job_sheet = JobSheet::where('business_id', $business_id)
-                        ->find($params['job_sheet_id']);
+                    ->find($params['job_sheet_id']);
 
                 $parts = $job_sheet->getPartsUsed();
             }
@@ -230,7 +230,7 @@ class DataController extends Controller
                     'job_sheet' => $job_sheet,
                     'repair_settings' => $repair_settings,
                     'parts' => $parts
-                    ],
+                ],
                 'module_js_path' => 'repair::layouts.partials.javascripts',
                 'module_css_path' => 'repair::job_sheet.tagify_css',
                 'go_back_url' => action('\Modules\Repair\Http\Controllers\RepairController@index'),
@@ -242,9 +242,9 @@ class DataController extends Controller
     }
 
     /**
-    * Function to add repair module taxonomies
-    * @return array
-    */
+     * Function to add repair module taxonomies
+     * @return array
+     */
     public function addTaxonomies()
     {
         $module_util = new ModuleUtil();
@@ -276,7 +276,7 @@ class DataController extends Controller
     {
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
-        $is_repair_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'repair_module');
+        $is_repair_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'repair_module');
 
         if ($is_repair_enabled) {
             $device_models = DeviceModel::forDropdown($business_id);
@@ -284,7 +284,7 @@ class DataController extends Controller
                 'view_path' => 'repair::device_model.partials.repair_product_screen',
                 'view_data' => [
                     'device_models' => $device_models,
-                    ],
+                ],
                 'module_js_path' => 'repair::layouts.partials.javascripts'
             ];
         } else {
@@ -293,11 +293,11 @@ class DataController extends Controller
     }
 
     /**
-   * Sets product fields from module
-   * An input field with name "has_module_data" is required in the request to call this function
-   * @param array $data
-   * @return obj
-   */
+     * Sets product fields from module
+     * An input field with name "has_module_data" is required in the request to call this function
+     * @param array $data
+     * @return obj
+     */
     public function after_product_saved($data)
     {
         $product = $data['product'];
@@ -322,7 +322,7 @@ class DataController extends Controller
     {
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
-        $is_repair_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'repair_module');
+        $is_repair_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'repair_module');
 
         if ($is_repair_enabled) {
             $device_models = DeviceModel::forDropdown($business_id);
@@ -330,7 +330,7 @@ class DataController extends Controller
                 'view_path' => 'repair::device_model.partials.list_product_filters',
                 'view_data' => [
                     'device_models' => $device_models,
-                    ]
+                ]
             ];
         } else {
             return [];
