@@ -1,0 +1,16 @@
+{
+    "name": "nwidart/cms",
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Cms\\Providers\\CmsServiceProvider"
+            ],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Cms\\": ""
+        }
+    }
+}
