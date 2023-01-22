@@ -2,16 +2,20 @@
 
 namespace Modules\ProductCatalogue\Http\Controllers;
 
+use Exception;
 use App\System;
-use Composer\Semver\Comparator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Composer\Semver\Comparator;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Artisan;
 
 class InstallController extends Controller
 {
+    protected $module_name;
+    protected $appVersion;
     public function __construct()
     {
         $this->module_name = 'productcatalogue';
@@ -52,7 +56,6 @@ class InstallController extends Controller
     {
         config(['app.debug' => true]);
         Artisan::call('config:clear');
-        Artisan::call('cache:clear');
     }
 
 
@@ -62,6 +65,7 @@ class InstallController extends Controller
     public function install()
     {
         try {
+
             $is_installed = System::getProperty($this->module_name . '_version');
             if (!empty($is_installed)) {
                 abort(404);
@@ -80,7 +84,7 @@ class InstallController extends Controller
             ];
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+            Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
                 'success' => false,
@@ -109,7 +113,7 @@ class InstallController extends Controller
                 'success' => true,
                 'msg' => __("lang_v1.success")
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $output = [
                 'success' => false,
                 'msg' => $e->getMessage()

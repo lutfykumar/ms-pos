@@ -2,17 +2,18 @@
 
 namespace Modules\ProductCatalogue\Http\Controllers;
 
+use App\Product;
+use App\Business;
+use App\Category;
+use App\Discount;
+use Carbon\Carbon;
+use App\BusinessLocation;
+use App\Utils\ModuleUtil;
+use App\SellingPriceGroup;
+use App\Utils\ProductUtil;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
-use App\Product;
-use App\Business;
-use App\Discount;
-use App\SellingPriceGroup;
-use App\Utils\ProductUtil;
-use App\BusinessLocation;
-use App\Utils\ModuleUtil;
-use App\Category;
 
 class ProductCatalogueController extends Controller
 {
@@ -42,24 +43,27 @@ class ProductCatalogueController extends Controller
     public function index($business_id, $location_id)
     {
         $products = Product::where('business_id', $business_id)
-                ->whereHas('product_locations', function($q) use ($location_id){
-                    $q->where('product_locations.location_id', $location_id);
-                })
-                ->ProductForSales()
-                ->with(['variations', 'variations.product_variation', 'category'])
-                ->get()
-                ->groupBy('category_id');
+            ->whereHas('product_locations', function ($q) use ($location_id) {
+                $q->where('product_locations.location_id', $location_id);
+            })
+            ->ProductForSales()
+            ->with(['variations', 'variations.product_variation', 'category'])
+            ->get()
+            ->groupBy('category_id');
         $business = Business::with(['currency'])->findOrFail($business_id);
         $business_location = BusinessLocation::where('business_id', $business_id)->findOrFail($location_id);
 
-        $now = \Carbon::now()->toDateTimeString();
+        $now = Carbon::now()->toDateTimeString();
         $discounts = Discount::where('business_id', $business_id)
-                                ->where('location_id', $location_id)
-                                ->where('is_active', 1)
-                                ->where('starts_at', '<=', $now)
-                                ->where('ends_at', '>=', $now)
-                                ->orderBy('priority', 'desc')
-                                ->get();
+            ->where('location_id', $location_id)
+            ->where('is_active', 1)
+            ->where('starts_at', '<=', $now)
+            ->where('ends_at', '>=', $now)
+            ->orderBy('priority', 'desc')
+            ->get();
+        foreach ($discounts as $key => $value) {
+            $discounts[$key]->discount_amount = $this->productUtil->num_f($value->discount_amount, false, $business);
+        }
 
         $categories = Category::forDropdown($business_id, 'product');
 
@@ -74,7 +78,7 @@ class ProductCatalogueController extends Controller
     public function show($business_id, $id)
     {
         $product = Product::with(['brand', 'unit', 'category', 'sub_category', 'product_tax', 'variations', 'variations.product_variation', 'variations.group_prices', 'variations.media', 'product_locations', 'warranty'])->where('business_id', $business_id)
-                        ->findOrFail($id);
+            ->findOrFail($id);
 
         $price_groups = SellingPriceGroup::where('business_id', $product->business_id)->active()->pluck('name', 'id');
 
@@ -90,7 +94,7 @@ class ProductCatalogueController extends Controller
                 $group_price_details[$variation->id][$group_price->price_group_id] = $group_price->price_inc_tax;
             }
 
-            $discounts[$variation->id] = $this->productUtil->getProductDiscount($product, $product->business_id, request()->input('location_id'), false, false, $variation->id);
+            $discounts[$variation->id] = $this->productUtil->getProductDiscount($product, $product->business_id, request()->input('location_id'), false, null, $variation->id);
         }
 
         $combo_variations = [];
@@ -119,6 +123,6 @@ class ProductCatalogueController extends Controller
         $business = Business::findOrFail($business_id);
 
         return view('productcatalogue::catalogue.generate_qr')
-                    ->with(compact('business_locations', 'business'));
+            ->with(compact('business_locations', 'business'));
     }
 }
