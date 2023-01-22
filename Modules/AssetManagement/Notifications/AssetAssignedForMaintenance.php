@@ -1,25 +1,26 @@
 <?php
 
-namespace Modules\Cms\Notifications;
+namespace Modules\AssetManagement\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class NewLeadGeneratedNotification extends Notification implements ShouldQueue
+class AssetAssignedForMaintenance extends Notification implements ShouldQueue
 {
     use Queueable;
-    protected $lead;
+
+    protected $notificationInfo;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($lead_details)
+    public function __construct($notificationInfo)
     {
-        $this->lead  = $lead_details;
+        $this->notificationInfo = $notificationInfo;
     }
 
     /**
@@ -30,7 +31,7 @@ class NewLeadGeneratedNotification extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return ['mail'];
+        return $this->notificationInfo['via'];
     }
 
     /**
@@ -41,14 +42,14 @@ class NewLeadGeneratedNotification extends Notification implements ShouldQueue
      */
     public function toMail($notifiable)
     {
+        $data = $this->notificationInfo;
+
         $mail = (new MailMessage)
-            ->greeting('Hello!')
-            ->subject('New inquiry from ' . $this->lead['name'])
-            ->line($this->lead['message'])
-            ->line('<br> <br> Other details are: <br>')
-            ->line('Name: ' . $this->lead['name'])
-            ->line('Mobile: ' . $this->lead['mobile'])
-            ->line('Email: ' . $this->lead['email']);
+            ->subject($data['subject'])
+            ->view(
+                'emails.plain_html',
+                ['content' => $data['body']]
+            );
 
         return $mail;
     }
@@ -62,7 +63,7 @@ class NewLeadGeneratedNotification extends Notification implements ShouldQueue
     public function toArray($notifiable)
     {
         return [
-            //
+            'msg' => $this->notificationInfo['subject']
         ];
     }
 }

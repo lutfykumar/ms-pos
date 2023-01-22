@@ -33,7 +33,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () use ($mnow) {
             Artisan::call('queue:work --stop-when-empty');
             Log::info('Cronjob berhasil dijalankan pada waktu : ' . $mnow . ' dari schedule.');
-        })->everyTenMinutes();
+        })->everyMinute();
         if ($env === 'production') {
             //Scheduling backup, specify the time when the backup will get cleaned & time when it will run.
             $schedule->command('backup:run')->dailyAt('23:50');

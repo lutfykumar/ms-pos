@@ -1,0 +1,16 @@
+{
+    "name": "twf/assetmanagement",
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\AssetManagement\\Providers\\AssetManagementServiceProvider"
+            ],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\AssetManagement\\": ""
+        }
+    }
+}
