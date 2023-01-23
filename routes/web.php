@@ -20,6 +20,7 @@ Route::get('/', function () {
 
 Auth::routes();
 
+Route::get('/ajax/scrap', 'AjaxController@scrap')->name('ajax.scrap');
 Route::get('/ajax/queue-work', 'AjaxController@queue')->name('ajax.queue');
 Route::get('/business/register', 'BusinessController@getRegister')->name('business.getRegister');
 Route::post('/business/register', 'BusinessController@postRegister')->name('business.postRegister');
