@@ -151,3 +151,10 @@ if (!function_exists('format_uang')) {
         return $res;
     }
 }
+if (!function_exists('get_numerics')) {
+    function get_numerics($str)
+    {
+        preg_match_all('/\d+/', $str, $matches);
+        return $matches[0];
+    }
+}

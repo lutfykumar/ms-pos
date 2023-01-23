@@ -204,7 +204,8 @@ class SubscriptionController extends BaseController
             if (isset($this->_payment_gateways()['pesapal']) && (strpos($request->merchant_reference, 'PESAPAL') !== false)) {
                 return $this->confirm_pesapal($package_id, $request);
             }
-
+            $time_langganan = $request->input('time_langganan');
+            $ctime_langganan = str_replace('_', ' ', $time_langganan);
             DB::beginTransaction();
 
             $business_id = request()->session()->get('user.business_id');
@@ -220,7 +221,11 @@ class SubscriptionController extends BaseController
             }
 
             //Add subscription details after payment is succesful
-            $this->_add_subscription($business_id, $package_id, request()->gateway, $payment_transaction_id, $user_id);
+            $subcriber = $this->_add_subscription($business_id, $package_id, request()->gateway, $payment_transaction_id, $user_id);
+            // Assign Pesan Waktu
+            $upd = Subscription::find($subcriber->id);
+            $upd->note = 'Waktu : ' . $ctime_langganan;
+            $upd->save();
             DB::commit();
 
             $msg = __('lang_v1.success');

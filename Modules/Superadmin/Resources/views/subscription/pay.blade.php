@@ -72,7 +72,29 @@
                             </li>
                         @endif
                     </ul>
-
+                    <ul class="list-group">
+                        <div class="list-group-item">
+                            <div class="form-group">
+                                <label for="sub_time"> Pilih Langganan Berapa lama?</label>
+                                <select name="time" id="sub_time" class="form-control" placeholder="Pilih salah satu">
+                                    <option value="1_bulan">1 Bulan</option>
+                                    <option value="2_bulan">2 Bulan</option>
+                                    <option value="3_bulan">3 Bulan</option>
+                                    <option value="4_bulan">4 Bulan</option>
+                                    <option value="5_bulan">5 Bulan</option>
+                                    <option value="6_bulan">6 Bulan</option>
+                                    <option value="7_bulan">7 Bulan</option>
+                                    <option value="8_bulan">8 Bulan</option>
+                                    <option value="9_bulan">9 Bulan</option>
+                                    <option value="10_bulan">10 Bulan</option>
+                                    <option value="11_bulan">11 Bulan</option>
+                                    <option value="12_bulan">12 Bulan</option>
+                                    <option value="2_tahun">2 Tahun</option>
+                                    <option value="3_tahun">3 Tahun</option>
+                                </select>
+                            </div>
+                        </div>
+                    </ul>
                     <ul class="list-group">
                         @foreach ($gateways as $k => $v)
                             <div class="list-group-item">
@@ -92,11 +114,12 @@
         </div>
     </section>
 @endsection
-{{-- @push('js')
+@push('js')
     <script>
-        $(document).on('click', '.btn-active-queue', function(e) {
-            e.preventDefault();
-            queue_work();
+        $(document).on('change', '#sub_time', function() {
+            let value = $(this).val()
+            let time_langganan = $('#time_langganan');
+            time_langganan.val(value).trigger('change');
         });
     </script>
-@endpush --}}
+@endpush

@@ -3,6 +3,7 @@
         method="POST">
         {{ csrf_field() }}
         <input type="hidden" name="gateway" value="{{ $k }}">
+        <input type="hidden" name="time_langganan" id="time_langganan" value="1">
 
         <button type="submit" class="btn btn-success btn-active-queue"> <i class="fas fa-handshake"></i>
             {{ $v }}</button>

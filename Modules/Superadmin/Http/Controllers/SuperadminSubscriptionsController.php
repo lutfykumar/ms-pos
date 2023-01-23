@@ -3,15 +3,16 @@
 namespace Modules\Superadmin\Http\Controllers;
 
 use App\System;
+use Carbon\Carbon;
 use App\Utils\BusinessUtil;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+
 use Illuminate\Support\Facades\Log;
 
 use Modules\Superadmin\Entities\Package;
-
 use Yajra\DataTables\Facades\DataTables;
 use Modules\Superadmin\Entities\Subscription;
 
@@ -43,7 +44,7 @@ class SuperadminSubscriptionsController extends BaseController
         if (request()->ajax()) {
             $superadmin_subscription = Subscription::join('business', 'subscriptions.business_id', '=', 'business.id')
                 ->join('packages', 'subscriptions.package_id', '=', 'packages.id')
-                ->select('business.name as business_name', 'packages.name as package_name', 'subscriptions.status', 'subscriptions.start_date', 'subscriptions.trial_end_date', 'subscriptions.end_date', 'subscriptions.package_price', 'subscriptions.paid_via', 'subscriptions.payment_transaction_id', 'subscriptions.id');
+                ->select('business.name as business_name', 'packages.name as package_name', 'subscriptions.status', 'subscriptions.start_date', 'subscriptions.trial_end_date', 'subscriptions.end_date', 'subscriptions.package_price', 'subscriptions.paid_via', 'subscriptions.payment_transaction_id', 'subscriptions.note', 'subscriptions.id');
 
             return DataTables::of($superadmin_subscription)
                 ->addColumn(
@@ -77,7 +78,7 @@ class SuperadminSubscriptionsController extends BaseController
                             </span>'
                 )
                 ->removeColumn('id')
-                ->rawColumns([2, 6, 9])
+                ->rawColumns([2, 6, 9, 10])
                 ->make(false);
         }
         return view('superadmin::superadmin_subscription.index');
@@ -182,8 +183,17 @@ class SuperadminSubscriptionsController extends BaseController
 
                 if ($subscriptions->status != 'approved' && empty($subscriptions->start_date) && $input['status'] == 'approved') {
                     $dates = $this->_get_package_dates($subscriptions->business_id, $subscriptions->package);
+                    // add end date by note time
+                    $type = substr($subscriptions->note, -5);
+                    $val = get_numerics($subscriptions->note)[0];
+                    if ($type == 'tahun') {
+                        $end_date = Carbon::createFromFormat('Y-m-d', $dates['end'])->addYear($val)->format('Y-m-d');
+                    } elseif ($type == 'bulan') {
+                        $end_date = Carbon::createFromFormat('Y-m-d', $dates['end'])->addMonth($val)->format('Y-m-d');
+                    }
+
                     $subscriptions->start_date = $dates['start'];
-                    $subscriptions->end_date = $dates['end'];
+                    $subscriptions->end_date = $end_date;
                     $subscriptions->trial_end_date = $dates['trial'];
                 }
 

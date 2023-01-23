@@ -41,7 +41,7 @@ class NewBusinessNotification extends Notification implements ShouldQueue
     public function toMail($notifiable)
     {
         $details = 'Business: ' . $this->business->name . ' <br>Business Owner: ' . $this->business->owner->user_full_name . ' <br>Email: ' . $this->business->owner->email .
-            ', Business contact number: ' . $this->business->locations->first()->mobile;
+            ', <br>Business contact number: ' . $this->business->locations->first()->mobile;
 
         return (new MailMessage)
             ->subject('New Business Registration')
