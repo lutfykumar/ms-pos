@@ -105,8 +105,15 @@
                     <strong><i class="fas fa-money-bill-alt fa-lg"></i></strong>
                 </button>
             @endcan
-
-            <div class="m-8 pull-left mt-15 hidden-xs" style="color: #fff;"><strong>{{ @format_date('now') }}</strong>
+            @if (auth()->user()->username == env('ADMINISTRATOR_USERNAMES'))
+                <a href="{{ url('log-viewer') }}" target="_blank"
+                    class="btn btn-success btn-flat pull-left m-8 btn-sm mt-10 hidden-xs" title="Lihat Log System"
+                    data-toggle="tooltip" data-placement="bottom">
+                    <strong><i class="fa fa-tasks fa-lg" aria-hidden="true"></i></strong>
+                </a>
+            @endif
+            <div class="m-8 pull-left mt-15 hidden-xs" style="color: #fff;">
+                <strong>{{ @format_date('now') }}</strong>
             </div>
 
             <ul class="nav navbar-nav">

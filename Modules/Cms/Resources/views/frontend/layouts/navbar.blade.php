@@ -52,8 +52,8 @@
                             @if ($__blog_count >= 1)
                                 <li class="hero-nav__item">
                                     <a href="{{ action('\Modules\Cms\Http\Controllers\CmsController@getBlogList') }}"
-                                        class="hero-nav__link">
-                                        {{ __('cms::lang.blogs') }}
+                                        class="hero-nav__link"> <strong>
+                                            {{ __('cms::lang.blogs') }}</strong>
                                     </a>
                                 </li>
                             @endif
@@ -93,19 +93,20 @@
                                 </li>
                             @endif
                             <li class="hero-nav__item">
-                                <a href="{{ route('cms.contact.us') }}" class="hero-nav__link">Kontak Kami</a>
+                                <a href="{{ route('cms.contact.us') }}" class="hero-nav__link"> <strong>Kontak
+                                        Kami</strong></a>
                             </li>
                             @if (Route::has('pricing') && config('app.env') != 'demo')
                                 <li class="hero-nav__item">
                                     <a href="{{ action('\Modules\Superadmin\Http\Controllers\PricingController@index') }}"
-                                        class="hero-nav__link">
-                                        @lang('superadmin::lang.pricing')
+                                        class="hero-nav__link"> <strong>
+                                            @lang('superadmin::lang.pricing')</strong>
                                     </a>
                                 </li>
                             @endif
                             <li class="hero-nav__item">
                                 <a href="{{ url('/') }}" class="hero-nav__link">
-                                    Beranda
+                                    <strong> Beranda</strong>
                                 </a>
                             </li>
                         </ul>
