@@ -3,9 +3,11 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
+    use SoftDeletes;
     /**
      * The attributes that aren't mass assignable.
      *
@@ -23,7 +25,7 @@ class Product extends Model
     protected $casts = [
         'sub_unit_ids' => 'array',
     ];
-    
+
     /**
      * Get the products image.
      *
@@ -40,10 +42,10 @@ class Product extends Model
     }
 
     /**
-    * Get the products image path.
-    *
-    * @return string
-    */
+     * Get the products image path.
+     *
+     * @return string
+     */
     public function getImagePathAttribute()
     {
         if (!empty($this->image)) {
@@ -58,7 +60,7 @@ class Product extends Model
     {
         return $this->hasMany(\App\ProductVariation::class);
     }
-    
+
     /**
      * Get the brand associated with the product.
      */
@@ -66,18 +68,18 @@ class Product extends Model
     {
         return $this->belongsTo(\App\Brands::class);
     }
-    
+
     /**
-    * Get the unit associated with the product.
-    */
+     * Get the unit associated with the product.
+     */
     public function unit()
     {
         return $this->belongsTo(\App\Unit::class);
     }
 
     /**
-    * Get the unit associated with the product.
-    */
+     * Get the unit associated with the product.
+     */
     public function second_unit()
     {
         return $this->belongsTo(\App\Unit::class, 'secondary_unit_id');
@@ -97,7 +99,7 @@ class Product extends Model
     {
         return $this->belongsTo(\App\Category::class, 'sub_category_id', 'id');
     }
-    
+
     /**
      * Get the brand associated with the product.
      */
