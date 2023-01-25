@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Hash;
 use Modules\Superadmin\Entities\Package;
 use Spatie\Permission\Models\Permission;
 use Yajra\DataTables\Facades\DataTables;
+use Modules\Superadmin\Entities\Subscription;
 use Modules\Superadmin\Notifications\PasswordUpdateNotification;
 
 class BusinessController extends BaseController
@@ -351,13 +352,16 @@ class BusinessController extends BaseController
         }
 
         $business = Business::with(['currency', 'locations', 'subscriptions', 'owner'])->find($business_id);
-
         $created_id = $business->created_by;
-
         $created_by = !empty($created_id) ? User::find($created_id) : null;
+        $modules = $this->moduleUtil->availableModules();
+        $permissions = $this->moduleUtil->getModuleData('superadmin_package', true);
+        // dd($business->module_eksternal);
+        // $custom_permissions = !empty($business->module_eksternal) ? trim($business->module_eksternal, '"') : [];
+        // dd($custom_permissions);
 
         return view('superadmin::business.show')
-            ->with(compact('business', 'created_by'));
+            ->with(compact('business', 'created_by', 'modules', 'permissions'));
     }
 
     /**
@@ -376,6 +380,27 @@ class BusinessController extends BaseController
      */
     public function update(Request $request)
     {
+    }
+
+    /**
+     * Update the specified resource in storage.
+     * @param  Request $request
+     * @return Response
+     */
+    public function updateModul(Request $request, $id)
+    {
+        $enabled_modules = $request->input('enabled_modules');
+        $custom_permissions = $request->input('custom_permissions');
+
+        $b = Business::find($id);
+        $b->enabled_modules = !empty($enabled_modules) ? $enabled_modules : NULL;
+        $b->module_eksternal = !empty($custom_permissions) ? $custom_permissions : NULL;
+        $b->save();
+        $output = [
+            'success' => 1,
+            'msg' => 'Success Update'
+        ];
+        return redirect()->back()->with('status', $output);
     }
 
     /**

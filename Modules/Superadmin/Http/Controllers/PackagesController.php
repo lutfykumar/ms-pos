@@ -2,6 +2,7 @@
 
 namespace Modules\Superadmin\Http\Controllers;
 
+use App\Business;
 use App\System;
 use Carbon\Carbon;
 
@@ -74,10 +75,11 @@ class PackagesController extends BaseController
 
         $intervals = ['days' => __('lang_v1.days'), 'months' => __('lang_v1.months'), 'years' => __('lang_v1.years')];
         $currency = System::getCurrency();
+        $modules = $this->moduleUtil->availableModules();
         $permissions = $this->moduleUtil->getModuleData('superadmin_package');
 
         return view('superadmin::packages.create')
-            ->with(compact('intervals', 'currency', 'permissions'));
+            ->with(compact('intervals', 'currency', 'permissions', 'modules'));
     }
 
     /**
@@ -93,7 +95,7 @@ class PackagesController extends BaseController
 
         try {
             $input = $request->only([
-                'name', 'description', 'location_count', 'user_count', 'product_count', 'invoice_count', 'interval', 'interval_count', 'trial_days', 'price', 'sort_order', 'is_active', 'custom_permissions', 'is_private', 'is_one_time', 'enable_custom_link', 'custom_link',
+                'name', 'description', 'location_count', 'user_count', 'product_count', 'invoice_count', 'interval', 'interval_count', 'trial_days', 'price', 'sort_order', 'is_active', 'custom_permissions', 'is_private', 'is_one_time', 'enable_custom_link', 'custom_link', 'module_internal',
                 'custom_link_text'
             ]);
 
@@ -109,6 +111,7 @@ class PackagesController extends BaseController
 
             $input['custom_link'] = empty($input['enable_custom_link']) ? '' : $input['custom_link'];
             $input['custom_link_text'] = empty($input['enable_custom_link']) ? '' : $input['custom_link_text'];
+            $input['module_internal'] = implode(',', $input['module_internal']);
 
             $package = new Package;
             $package->fill($input);
@@ -146,13 +149,17 @@ class PackagesController extends BaseController
     {
         $packages = Package::where('id', $id)
             ->first();
-
+        if (!empty($packages->module_internal)) {
+            $active_module = explode(',', str_replace('"', '', $packages->module_internal));
+        } else {
+            $active_module = [];
+        }
         $intervals = ['days' => __('lang_v1.days'), 'months' => __('lang_v1.months'), 'years' => __('lang_v1.years')];
-
+        $modules = $this->moduleUtil->availableModules();
         $permissions = $this->moduleUtil->getModuleData('superadmin_package', true);
 
         return view('superadmin::packages.edit')
-            ->with(compact('packages', 'intervals', 'permissions'));
+            ->with(compact('packages', 'intervals', 'permissions', 'modules', 'active_module'));
     }
 
     /**
@@ -167,17 +174,22 @@ class PackagesController extends BaseController
         }
 
         try {
-            $packages_details = $request->only(['name', 'id', 'description', 'location_count', 'user_count', 'product_count', 'invoice_count', 'interval', 'interval_count', 'trial_days', 'price', 'sort_order', 'is_active', 'custom_permissions', 'is_private', 'is_one_time', 'enable_custom_link', 'custom_link', 'custom_link_text']);
-
+            $packages_details = $request->only(['name', 'id', 'description', 'location_count', 'user_count', 'product_count', 'invoice_count', 'interval', 'interval_count', 'trial_days', 'price', 'sort_order', 'is_active', 'custom_permissions', 'is_private', 'is_one_time', 'enable_custom_link', 'custom_link', 'custom_link_text', 'module_internal']);
             $packages_details['is_active'] = empty($packages_details['is_active']) ? 0 : 1;
             $packages_details['custom_permissions'] = empty($packages_details['custom_permissions']) ? null : $packages_details['custom_permissions'];
-
+            if (!empty($packages_details['custom_permissions'])) {
+                $module_eksternal = [];
+                foreach ($packages_details['custom_permissions'] as $key => $value) {
+                    $module_eksternal[] = $key;
+                }
+            }
             $packages_details['is_private'] = empty($packages_details['is_private']) ? 0 : 1;
             $packages_details['is_one_time'] = empty($packages_details['is_one_time']) ? 0 : 1;
             $packages_details['enable_custom_link'] = empty($packages_details['enable_custom_link']) ? 0 : 1;
             $packages_details['custom_link'] = empty($packages_details['enable_custom_link']) ? '' : $packages_details['custom_link'];
             $packages_details['custom_link_text'] = empty($packages_details['enable_custom_link']) ? '' : $packages_details['custom_link_text'];
-
+            $array_module_internal = $packages_details['module_internal'];
+            $packages_details['module_internal'] = implode(',', $packages_details['module_internal']);
             $package = Package::where('id', $id)
                 ->first();
             $package->fill($packages_details);
@@ -196,11 +208,21 @@ class PackagesController extends BaseController
                         $package_details[$name] = $value;
                     }
                 }
-
                 //Update subscription package details
                 $subscriptions = Subscription::where('package_id', $package->id)
                     ->whereDate('end_date', '>=', Carbon::now())
-                    ->update(['package_details' => json_encode($package_details)]);
+                    ->update(['package_details' => json_encode($package_details), 'module_internal' => $packages_details['module_internal']]);
+
+                //update business module
+                if (!empty($array_module_internal)) {
+                    $business = Subscription::select('business_id')->where('package_id', $package->id)->get();
+                    foreach ($business as $v) {
+                        $b = Business::find($v->business_id);
+                        $b->enabled_modules = $array_module_internal;
+                        $b->module_eksternal = $module_eksternal;
+                        $b->save();
+                    }
+                }
             }
 
             $output = ['success' => 1, 'msg' => __('lang_v1.success')];

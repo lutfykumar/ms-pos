@@ -2,6 +2,7 @@
 
 namespace Modules\Superadmin\Http\Controllers;
 
+use App\Business;
 use App\System;
 use Carbon\Carbon;
 use App\Utils\BusinessUtil;
@@ -180,7 +181,6 @@ class SuperadminSubscriptionsController extends BaseController
                 $input = $request->only(['status', 'payment_transaction_id']);
 
                 $subscriptions = Subscription::findOrFail($id);
-
                 if ($subscriptions->status != 'approved' && empty($subscriptions->start_date) && $input['status'] == 'approved') {
                     $dates = $this->_get_package_dates($subscriptions->business_id, $subscriptions->package);
                     // add end date by note time
@@ -199,7 +199,19 @@ class SuperadminSubscriptionsController extends BaseController
 
                 $subscriptions->status = $input['status'];
                 $subscriptions->payment_transaction_id = $input['payment_transaction_id'];
-                $subscriptions->save();
+                if ($subscriptions->save()) {
+                    if (!empty($subscriptions->package->module_internal)) {
+                        $active_module = explode(',', str_replace('"', '', $subscriptions->package->module_internal));
+                        $module_eksternal = [];
+                        foreach ($subscriptions->package->custom_permissions as $key => $value) {
+                            $module_eksternal[] = $key;
+                        }
+                        $b = Business::find($subscriptions->business_id);
+                        $b->enabled_modules = $active_module;
+                        $b->module_eksternal = $module_eksternal;
+                        $b->save();
+                    }
+                };
 
                 $output = array(
                     'success' => true,

@@ -20,6 +20,7 @@ Route::group(['middleware' => ['web', 'auth', 'language', 'AdminSidebarMenu', 's
 
     Route::resource('/business', 'BusinessController');
     Route::get('/business/{id}/destroy', 'BusinessController@destroy');
+    Route::post('/business/update-modul/{id}', 'BusinessController@updateModul');
 
     Route::resource('/packages', 'PackagesController');
     Route::get('/packages/{id}/destroy', 'PackagesController@destroy');

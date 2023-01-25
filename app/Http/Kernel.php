@@ -67,6 +67,7 @@ class Kernel extends HttpKernel
         'AdminSidebarMenu' => \App\Http\Middleware\AdminSidebarMenu::class,
         'superadmin' => \App\Http\Middleware\Superadmin::class,
         'CheckUserLogin' => \App\Http\Middleware\CheckUserLogin::class,
+        'module' => \App\Http\Middleware\ModuleMiddleware::class,
     ];
     /**
      * The priority-sorted list of middleware.

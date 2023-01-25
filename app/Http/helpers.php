@@ -1,5 +1,7 @@
 <?php
 
+use Modules\Superadmin\Entities\Subscription;
+
 /**
  * boots pos.
  */
@@ -157,4 +159,24 @@ if (!function_exists('get_numerics')) {
         preg_match_all('/\d+/', $str, $matches);
         return $matches[0];
     }
+}
+function businessModule($module)
+{
+    $business_id = request()->session()->get('user.business_id');
+    $modules = is_array($module)
+        ? $module
+        : explode('|', $module);
+
+    $otorize = false;
+    $data = Subscription::active_subscription($business_id);
+    if (!empty($data->module_internal)) {
+        $active_module = explode(',', str_replace('"', '', $data->module_internal));
+        foreach ($modules as $v) {
+            if (in_array($v, $active_module)) {
+                $otorize = true;
+                break;
+            }
+        }
+    }
+    return $otorize;
 }

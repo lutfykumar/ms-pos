@@ -44,10 +44,6 @@ Route::middleware(['auth', 'SetSessionData', 'language', 'timezone', 'AdminSideb
     Route::get('pause-resume-service-staff-timer/{user_id}', 'SellPosController@pauseResumeServiceStaffTimer');
     Route::get('mark-as-available/{user_id}', 'SellPosController@markAsAvailable');
 
-    Route::resource('purchase-requisition', 'PurchaseRequisitionController')->except(['edit', 'update']);
-    Route::post('/get-requisition-products', 'PurchaseRequisitionController@getRequisitionProducts')->name('get-requisition-products');
-    Route::get('get-purchase-requisitions/{location_id}', 'PurchaseRequisitionController@getPurchaseRequisitions');
-    Route::get('get-purchase-requisition-lines/{purchase_requisition_id}', 'PurchaseRequisitionController@getPurchaseRequisitionLines');
 
     Route::get('/sign-in-as-user/{id}', 'ManageUserController@signInAsUser')->name('sign-in-as-user');
 
@@ -131,14 +127,6 @@ Route::middleware(['auth', 'SetSessionData', 'language', 'timezone', 'AdminSideb
 
     Route::resource('products', 'ProductController');
 
-    Route::post('/import-purchase-products', 'PurchaseController@importPurchaseProducts');
-    Route::post('/purchases/update-status', 'PurchaseController@updateStatus');
-    Route::get('/purchases/get_products', 'PurchaseController@getProducts');
-    Route::get('/purchases/get_suppliers', 'PurchaseController@getSuppliers');
-    Route::post('/purchases/get_purchase_entry_row', 'PurchaseController@getPurchaseEntryRow');
-    Route::post('/purchases/check_ref_number', 'PurchaseController@checkRefNumber');
-    Route::resource('purchases', 'PurchaseController')->except(['show']);
-
     Route::get('/toggle-subscription/{id}', 'SellPosController@toggleRecurringInvoices');
     Route::post('/sells/pos/get-types-of-service-details', 'SellPosController@getTypesOfServiceDetails');
     Route::get('/sells/subscriptions', 'SellPosController@listSubscriptions');
@@ -218,7 +206,6 @@ Route::middleware(['auth', 'SetSessionData', 'language', 'timezone', 'AdminSideb
     Route::get('/reports/product-sell-report-with-purchase', 'ReportController@getproductSellReportWithPurchase');
     Route::get('/reports/product-sell-grouped-report', 'ReportController@getproductSellGroupedReport');
     Route::get('/reports/lot-report', 'ReportController@getLotReport');
-    Route::get('/reports/purchase-payment-report', 'ReportController@purchasePaymentReport');
     Route::get('/reports/sell-payment-report', 'ReportController@sellPaymentReport');
     Route::get('/reports/product-stock-details', 'ReportController@productStockDetails');
     Route::get('/reports/adjust-product-stock', 'ReportController@adjustProductStock');
@@ -316,13 +303,6 @@ Route::middleware(['auth', 'SetSessionData', 'language', 'timezone', 'AdminSideb
     Route::get('notification/get-template/{transaction_id}/{template_for}', 'NotificationController@getTemplate');
     Route::post('notification/send', 'NotificationController@send');
 
-    Route::post('/purchase-return/update', 'CombinedPurchaseReturnController@update');
-    Route::get('/purchase-return/edit/{id}', 'CombinedPurchaseReturnController@edit');
-    Route::post('/purchase-return/save', 'CombinedPurchaseReturnController@save');
-    Route::post('/purchase-return/get_product_row', 'CombinedPurchaseReturnController@getProductRow');
-    Route::get('/purchase-return/create', 'CombinedPurchaseReturnController@create');
-    Route::get('/purchase-return/add/{id}', 'PurchaseReturnController@add');
-    Route::resource('/purchase-return', 'PurchaseReturnController', ['except' => ['create']]);
 
     Route::get('/discount/activate/{id}', 'DiscountController@activate');
     Route::post('/discount/mass-deactivate', 'DiscountController@massDeactivate');
@@ -396,11 +376,41 @@ Route::middleware(['auth', 'SetSessionData', 'language', 'timezone', 'AdminSideb
     Route::get('get-document-note-page', 'DocumentAndNoteController@getDocAndNoteIndexPage');
     Route::post('post-document-upload', 'DocumentAndNoteController@postMedia');
     Route::resource('note-documents', 'DocumentAndNoteController');
+
+    Route::resource('purchase-requisition', 'PurchaseRequisitionController')->except(['edit', 'update']);
     Route::resource('purchase-order', 'PurchaseOrderController');
-    Route::get('get-purchase-orders/{contact_id}', 'PurchaseOrderController@getPurchaseOrders');
-    Route::get('get-purchase-order-lines/{purchase_order_id}', 'PurchaseController@getPurchaseOrderLines');
-    Route::get('edit-purchase-orders/{id}/status', 'PurchaseOrderController@getEditPurchaseOrderStatus');
-    Route::put('update-purchase-orders/{id}/status', 'PurchaseOrderController@postEditPurchaseOrderStatus');
+    Route::group(['middleware' => ['module:purchases']], function () {
+        Route::post('/get-requisition-products', 'PurchaseRequisitionController@getRequisitionProducts')->name('get-requisition-products');
+        Route::get('get-purchase-requisitions/{location_id}', 'PurchaseRequisitionController@getPurchaseRequisitions');
+        Route::get('get-purchase-requisition-lines/{purchase_requisition_id}', 'PurchaseRequisitionController@getPurchaseRequisitionLines');
+
+        Route::get('get-purchase-orders/{contact_id}', 'PurchaseOrderController@getPurchaseOrders');
+        Route::get('get-purchase-order-lines/{purchase_order_id}', 'PurchaseController@getPurchaseOrderLines');
+        Route::get('edit-purchase-orders/{id}/status', 'PurchaseOrderController@getEditPurchaseOrderStatus');
+        Route::put('update-purchase-orders/{id}/status', 'PurchaseOrderController@postEditPurchaseOrderStatus');
+
+        Route::post('/import-purchase-products', 'PurchaseController@importPurchaseProducts');
+        Route::post('/purchases/update-status', 'PurchaseController@updateStatus');
+        Route::get('/purchases/get_products', 'PurchaseController@getProducts');
+        Route::get('/purchases/get_suppliers', 'PurchaseController@getSuppliers');
+        Route::post('/purchases/get_purchase_entry_row', 'PurchaseController@getPurchaseEntryRow');
+        Route::post('/purchases/check_ref_number', 'PurchaseController@checkRefNumber');
+        Route::resource('purchases', 'PurchaseController')->except(['show']);
+
+        Route::post('/purchase-return/update', 'CombinedPurchaseReturnController@update');
+        Route::get('/purchase-return/edit/{id}', 'CombinedPurchaseReturnController@edit');
+        Route::post('/purchase-return/save', 'CombinedPurchaseReturnController@save');
+        Route::post('/purchase-return/get_product_row', 'CombinedPurchaseReturnController@getProductRow');
+        Route::get('/purchase-return/create', 'CombinedPurchaseReturnController@create');
+        Route::get('/purchase-return/add/{id}', 'PurchaseReturnController@add');
+        Route::resource('/purchase-return', 'PurchaseReturnController', ['except' => ['create']]);
+
+        Route::get('/reports/purchase-payment-report', 'ReportController@purchasePaymentReport');
+    });
+
+    // Route::group(['middleware' => ['module:purchases|add_sale']], function () {
+    // });
+
     Route::resource('sales-order', 'SalesOrderController')->only(['index']);
     Route::get('get-sales-orders/{customer_id}', 'SalesOrderController@getSalesOrders');
     Route::get('get-sales-order-lines', 'SellPosController@getSalesOrderLines');
