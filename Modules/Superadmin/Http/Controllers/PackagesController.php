@@ -177,8 +177,8 @@ class PackagesController extends BaseController
             $packages_details = $request->only(['name', 'id', 'description', 'location_count', 'user_count', 'product_count', 'invoice_count', 'interval', 'interval_count', 'trial_days', 'price', 'sort_order', 'is_active', 'custom_permissions', 'is_private', 'is_one_time', 'enable_custom_link', 'custom_link', 'custom_link_text', 'module_internal']);
             $packages_details['is_active'] = empty($packages_details['is_active']) ? 0 : 1;
             $packages_details['custom_permissions'] = empty($packages_details['custom_permissions']) ? null : $packages_details['custom_permissions'];
+            $module_eksternal = [];
             if (!empty($packages_details['custom_permissions'])) {
-                $module_eksternal = [];
                 foreach ($packages_details['custom_permissions'] as $key => $value) {
                     $module_eksternal[] = $key;
                 }
@@ -219,7 +219,7 @@ class PackagesController extends BaseController
                     foreach ($business as $v) {
                         $b = Business::find($v->business_id);
                         $b->enabled_modules = $array_module_internal;
-                        $b->module_eksternal = $module_eksternal;
+                        $b->module_eksternal = json_encode($module_eksternal);
                         $b->save();
                     }
                 }
