@@ -62,12 +62,13 @@ class DataController extends Controller
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
 
-        $is_crm_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'crm_module');
+        // $is_crm_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'crm_module');
+        $is_business_module_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'crm_module');
 
         $commonUtil = new Util();
         $is_admin = $commonUtil->is_admin(auth()->user(), $business_id);
 
-        if ($is_crm_enabled) {
+        if ($is_business_module_enabled) {
             Menu::modify(
                 'admin-sidebar-menu',
                 function ($menu) use ($is_admin) {

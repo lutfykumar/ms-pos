@@ -31,16 +31,17 @@ class DataController extends Controller
     {
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
-        $is_productcatalogue_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'productcatalogue_module', 'superadmin_package');
+        // $is_productcatalogue_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'productcatalogue_module', 'superadmin_package');
+        $is_business_module_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'productcatalogue_module', 'superadmin_package');
 
-        if ($is_productcatalogue_enabled) {
+        if ($is_business_module_enabled) {
             Menu::modify('admin-sidebar-menu', function ($menu) {
                 $menu->url(
-                        action('\Modules\ProductCatalogue\Http\Controllers\ProductCatalogueController@generateQr'),
-                        __('productcatalogue::lang.catalogue_qr'),
-                        ['icon' => 'fa fas fa-qrcode', 'active' => request()->segment(1) == 'product-catalogue', 'style' => config('app.env') == 'demo' ? 'background-color: #ff851b;' : '']
-                    )
-                ->order(95);
+                    action('\Modules\ProductCatalogue\Http\Controllers\ProductCatalogueController@generateQr'),
+                    __('productcatalogue::lang.catalogue_qr'),
+                    ['icon' => 'fa fas fa-qrcode', 'active' => request()->segment(1) == 'product-catalogue', 'style' => config('app.env') == 'demo' ? 'background-color: #ff851b;' : '']
+                )
+                    ->order(95);
             });
         }
     }

@@ -6,6 +6,7 @@ use \Module;
 use App\User;
 use App\System;
 use App\Account;
+use App\Business;
 use App\Product;
 use App\Transaction;
 use App\BusinessLocation;
@@ -148,6 +149,55 @@ class ModuleUtil extends Util
             $package = \Modules\Superadmin\Entities\Subscription::active_subscription($business_id);
 
             if (empty($package)) {
+                return false;
+            } elseif (isset($package['package_details'][$permission])) {
+                if (!is_null($callback_function)) {
+                    $obj = new ModuleUtil();
+                    $permissions = $obj->getModuleData($callback_function);
+
+                    $permission_formatted = [];
+                    foreach ($permissions as $per) {
+                        foreach ($per as $details) {
+                            $permission_formatted[$details['name']] = $details['label'];
+                        }
+                    }
+
+                    if (isset($permission_formatted[$permission])) {
+                        return $package['package_details'][$permission];
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return $package['package_details'][$permission];
+                }
+            } else {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    /**
+     *
+     * @param int $business_id
+     * @param string $permission
+     * @param string $callback_function = null
+     *
+     * @return boolean
+     */
+    public function hasThePermissionModuleBusiness($business_id, $permission, $callback_function = null)
+    {
+        if ($this->isSuperadminInstalled()) {
+            if (auth()->user()->can('superadmin')) {
+                return true;
+            }
+
+            $package = Business::find($business_id);
+            if (empty($package->module_eksternal)) {
+                return false;
+            }
+            // dd($package->module_eksternal);
+            if (!in_array($permission, json_decode($package->module_eksternal))) {
                 return false;
             } elseif (isset($package['package_details'][$permission])) {
                 if (!is_null($callback_function)) {

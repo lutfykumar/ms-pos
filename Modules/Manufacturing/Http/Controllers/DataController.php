@@ -63,16 +63,17 @@ class DataController extends Controller
     {
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
-        $is_mfg_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'manufacturing_module', 'superadmin_package');
+        // $is_mfg_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'manufacturing_module', 'superadmin_package');
+        $is_business_module_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'manufacturing_module', 'superadmin_package');
 
-        if ($is_mfg_enabled && (auth()->user()->can('manufacturing.access_recipe') || auth()->user()->can('manufacturing.access_production'))) {
+        if ($is_business_module_enabled && (auth()->user()->can('manufacturing.access_recipe') || auth()->user()->can('manufacturing.access_production'))) {
             Menu::modify('admin-sidebar-menu', function ($menu) {
                 $menu->url(
-                        action('\Modules\Manufacturing\Http\Controllers\RecipeController@index'),
-                        __('manufacturing::lang.manufacturing'),
-                        ['icon' => 'fa fas fa-industry', 'style' => config('app.env') == 'demo' ? 'background-color: #ff851b;' : '', 'active' => request()->segment(1) == 'manufacturing']
-                    )
-                ->order(21);
+                    action('\Modules\Manufacturing\Http\Controllers\RecipeController@index'),
+                    __('manufacturing::lang.manufacturing'),
+                    ['icon' => 'fa fas fa-industry', 'style' => config('app.env') == 'demo' ? 'background-color: #ff851b;' : '', 'active' => request()->segment(1) == 'manufacturing']
+                )
+                    ->order(21);
             });
         }
     }
@@ -124,11 +125,11 @@ class DataController extends Controller
         $start_date = null,
         $end_date = null,
         $location_id = null
-        ) {
+    ) {
         $query = Transaction::where('business_id', $business_id)
-                            ->where('type', 'production_purchase')
-                            ->where('mfg_is_final', 1);
-        
+            ->where('type', 'production_purchase')
+            ->where('mfg_is_final', 1);
+
         //Check for permitted locations of a user
         $permitted_locations = auth()->user()->permitted_locations();
         if ($permitted_locations != 'all') {
@@ -150,9 +151,9 @@ class DataController extends Controller
 
         $total = $query->select(
             DB::raw('SUM(final_total - ((final_total * 100) / (mfg_production_cost + 100) ) ) as total_production_cost')
-            )->first();
+        )->first();
 
-        
+
         $total_production_cost = !empty($total->total_production_cost) ? $total->total_production_cost : 0;
 
         return $total_production_cost;

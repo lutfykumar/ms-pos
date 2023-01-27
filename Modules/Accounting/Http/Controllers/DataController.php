@@ -51,9 +51,10 @@ class DataController extends Controller
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
         $module_names = get_module_names();
-        $is_accounting_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, $module_names->accounting);
+        // $is_accounting_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, $module_names->accounting);
+        $is_business_module_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, $module_names->accounting);
 
-        if ($is_accounting_enabled) {
+        if ($is_business_module_enabled) {
             Menu::modify('admin-sidebar-menu', function ($menu) {
                 $menu->url(
                     action('\Modules\Accounting\Http\Controllers\DashboardController@index'),

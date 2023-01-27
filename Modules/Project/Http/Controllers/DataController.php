@@ -118,9 +118,10 @@ class DataController extends Controller
         $commonUtil = new Util();
         $is_admin = $commonUtil->is_admin(auth()->user(), $business_id);
 
-        $is_project_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'project_module');
+        // $is_project_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'project_module');
+        $is_business_module_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'project_module');
 
-        if ($is_project_enabled) {
+        if ($is_business_module_enabled) {
             Menu::modify(
                 'admin-sidebar-menu',
                 function ($menu) use ($is_admin) {

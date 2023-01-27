@@ -322,9 +322,10 @@ class DataController extends Controller
     {
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
-        $is_repair_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'repair_module');
+        // $is_repair_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'repair_module');
+        $is_business_module_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'repair_module');
 
-        if ($is_repair_enabled) {
+        if ($is_business_module_enabled) {
             $device_models = DeviceModel::forDropdown($business_id);
             return [
                 'view_path' => 'repair::device_model.partials.list_product_filters',
