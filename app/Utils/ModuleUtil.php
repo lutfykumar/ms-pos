@@ -196,29 +196,8 @@ class ModuleUtil extends Util
             if (empty($package->module_eksternal)) {
                 return false;
             }
-            // dd($package->module_eksternal);
-            if (!in_array($permission, json_decode($package->module_eksternal))) {
-                return false;
-            } elseif (isset($package['package_details'][$permission])) {
-                if (!is_null($callback_function)) {
-                    $obj = new ModuleUtil();
-                    $permissions = $obj->getModuleData($callback_function);
-
-                    $permission_formatted = [];
-                    foreach ($permissions as $per) {
-                        foreach ($per as $details) {
-                            $permission_formatted[$details['name']] = $details['label'];
-                        }
-                    }
-
-                    if (isset($permission_formatted[$permission])) {
-                        return $package['package_details'][$permission];
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return $package['package_details'][$permission];
-                }
+            if (in_array($permission, json_decode($package->module_eksternal))) {
+                return true;
             } else {
                 return false;
             }

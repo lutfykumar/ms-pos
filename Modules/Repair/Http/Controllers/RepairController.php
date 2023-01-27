@@ -74,7 +74,7 @@ class RepairController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && (auth()->user()->can('repair.view') || auth()->user()->can('repair.view_own'))))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && (auth()->user()->can('repair.view') || auth()->user()->can('repair.view_own'))))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -441,7 +441,7 @@ class RepairController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && auth()->user()->can('repair.create')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && auth()->user()->can('repair.create')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -538,7 +538,7 @@ class RepairController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && auth()->user()->can('repair.view')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && auth()->user()->can('repair.view')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -650,7 +650,7 @@ class RepairController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && auth()->user()->can('repair.update')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && auth()->user()->can('repair.update')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -847,7 +847,7 @@ class RepairController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && auth()->user()->can('repair_status.update')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && auth()->user()->can('repair_status.update')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -866,7 +866,7 @@ class RepairController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && auth()->user()->can('repair_status.update')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && auth()->user()->can('repair_status.update')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -920,7 +920,7 @@ class RepairController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && auth()->user()->can('repair.update')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && auth()->user()->can('repair.update')))) {
             abort(403, 'Unauthorized action.');
         }
 

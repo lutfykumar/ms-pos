@@ -118,7 +118,7 @@ class DataController extends Controller
         $commonUtil = new Util();
         $is_admin = $commonUtil->is_admin(auth()->user(), $business_id);
 
-        // $is_project_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'project_module');
+        // $is_project_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'project_module');
         $is_business_module_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'project_module');
 
         if ($is_business_module_enabled) {
@@ -257,7 +257,7 @@ class DataController extends Controller
         $business_id = request()->session()->get('user.business_id');
 
         $module_util = new ModuleUtil();
-        if (!(auth()->user()->can('superadmin') || $module_util->hasThePermissionInSubscription($business_id, 'project_module'))) {
+        if (!(auth()->user()->can('superadmin') || $module_util->hasThePermissionModuleBusiness($business_id, 'project_module'))) {
             return ['project' => []];
         }
 
@@ -282,7 +282,7 @@ class DataController extends Controller
     {
         $module_util = new ModuleUtil();
         $business_id = session()->get('user.business_id');
-        $is_subscribed_project = (bool)$module_util->hasThePermissionInSubscription($business_id, 'project_module');
+        $is_subscribed_project = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'project_module');
 
         if ($is_subscribed_project) {
             //for multiple tab just add another array of tab details and if js is in common file just include once in any array

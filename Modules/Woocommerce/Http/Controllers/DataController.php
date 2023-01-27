@@ -99,7 +99,7 @@ class DataController extends Controller
         $business_id = request()->session()->get('user.business_id');
 
         $module_util = new ModuleUtil();
-        $is_woo_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'woocommerce_module', 'superadmin_package');
+        $is_woo_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'woocommerce_module', 'superadmin_package');
         if ($is_woo_enabled) {
             return  [
                 'template_path' => $path,
@@ -129,7 +129,7 @@ class DataController extends Controller
         $module_util = new ModuleUtil();
 
         $business_id = session()->get('user.business_id');
-        // $is_woo_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'woocommerce_module', 'superadmin_package');
+        // $is_woo_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'woocommerce_module', 'superadmin_package');
         $is_business_module_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'woocommerce_module', 'superadmin_package');
         if ($is_business_module_enabled && (auth()->user()->can('woocommerce.syc_categories') || auth()->user()->can('woocommerce.sync_products') || auth()->user()->can('woocommerce.sync_orders') || auth()->user()->can('woocommerce.map_tax_rates') || auth()->user()->can('woocommerce.access_woocommerce_api_settings'))) {
             Menu::modify('admin-sidebar-menu', function ($menu) {

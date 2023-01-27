@@ -44,7 +44,7 @@ class RepairServiceProvider extends ServiceProvider
             } else {
                 $business_id = session()->get('user.business_id');
                 $module_util = new ModuleUtil();
-                $__is_repair_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'repair_module');
+                $__is_repair_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'repair_module');
             }
 
             $view->with(compact('__is_repair_enabled'));

@@ -69,7 +69,7 @@ class JobSheetController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && (auth()->user()->can('job_sheet.view_assigned') || auth()->user()->can('job_sheet.view_all') || auth()->user()->can('job_sheet.create'))))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && (auth()->user()->can('job_sheet.view_assigned') || auth()->user()->can('job_sheet.view_all') || auth()->user()->can('job_sheet.create'))))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -317,7 +317,7 @@ class JobSheetController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && auth()->user()->can('job_sheet.create')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && auth()->user()->can('job_sheet.create')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -354,7 +354,7 @@ class JobSheetController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && auth()->user()->can('job_sheet.create')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && auth()->user()->can('job_sheet.create')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -452,7 +452,7 @@ class JobSheetController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && (auth()->user()->can('job_sheet.view_assigned') || auth()->user()->can('job_sheet.view_all') || auth()->user()->can('job_sheet.create'))))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && (auth()->user()->can('job_sheet.view_assigned') || auth()->user()->can('job_sheet.view_all') || auth()->user()->can('job_sheet.create'))))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -504,7 +504,7 @@ class JobSheetController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && auth()->user()->can('job_sheet.edit')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && auth()->user()->can('job_sheet.edit')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -543,7 +543,7 @@ class JobSheetController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && auth()->user()->can('job_sheet.edit')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && auth()->user()->can('job_sheet.edit')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -631,7 +631,7 @@ class JobSheetController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && auth()->user()->can('job_sheet.delete')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && auth()->user()->can('job_sheet.delete')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -667,7 +667,7 @@ class JobSheetController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && (auth()->user()->can('job_sheet.create') || auth()->user()->can('job_sheet.edit'))))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && (auth()->user()->can('job_sheet.create') || auth()->user()->can('job_sheet.edit'))))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -716,7 +716,7 @@ class JobSheetController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && (auth()->user()->can('job_sheet.create') || auth()->user()->can('job_sheet.edit'))))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && (auth()->user()->can('job_sheet.create') || auth()->user()->can('job_sheet.edit'))))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -769,7 +769,7 @@ class JobSheetController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && (auth()->user()->can('job_sheet.view_assigned') || auth()->user()->can('job_sheet.view_all') || auth()->user()->can('job_sheet.create'))))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && (auth()->user()->can('job_sheet.view_assigned') || auth()->user()->can('job_sheet.view_all') || auth()->user()->can('job_sheet.create'))))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -797,7 +797,7 @@ class JobSheetController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && (auth()->user()->can('job_sheet.create') || auth()->user()->can('job_sheet.edit'))))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && (auth()->user()->can('job_sheet.create') || auth()->user()->can('job_sheet.edit'))))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -818,7 +818,7 @@ class JobSheetController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && (auth()->user()->can('job_sheet.create') || auth()->user()->can('job_sheet.edit'))))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && (auth()->user()->can('job_sheet.create') || auth()->user()->can('job_sheet.edit'))))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -895,7 +895,7 @@ class JobSheetController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && (auth()->user()->can('job_sheet.view_assigned') || auth()->user()->can('job_sheet.view_all') || auth()->user()->can('job_sheet.create'))))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && (auth()->user()->can('job_sheet.view_assigned') || auth()->user()->can('job_sheet.view_all') || auth()->user()->can('job_sheet.create'))))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -954,7 +954,7 @@ class JobSheetController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && (auth()->user()->can('job_sheet.create') || auth()->user()->can('job_sheet.edit'))))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && (auth()->user()->can('job_sheet.create') || auth()->user()->can('job_sheet.edit'))))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -969,7 +969,7 @@ class JobSheetController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'repair_module') && (auth()->user()->can('job_sheet.create') || auth()->user()->can('job_sheet.edit'))))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'repair_module') && (auth()->user()->can('job_sheet.create') || auth()->user()->can('job_sheet.edit'))))) {
             abort(403, 'Unauthorized action.');
         }
 

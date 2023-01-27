@@ -36,7 +36,7 @@ class ManufacturingServiceProvider extends ServiceProvider
             } else {
                 $business_id = session()->get('user.business_id');
                 $module_util = new ModuleUtil();
-                $__is_mfg_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'manufacturing_module', 'superadmin_package');
+                $__is_mfg_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'manufacturing_module', 'superadmin_package');
             }
 
             $view->with(compact('__is_mfg_enabled'));
@@ -61,10 +61,10 @@ class ManufacturingServiceProvider extends ServiceProvider
     protected function registerConfig()
     {
         $this->publishes([
-            __DIR__.'/../Config/config.php' => config_path('manufacturing.php'),
+            __DIR__ . '/../Config/config.php' => config_path('manufacturing.php'),
         ], 'config');
         $this->mergeConfigFrom(
-            __DIR__.'/../Config/config.php',
+            __DIR__ . '/../Config/config.php',
             'manufacturing'
         );
     }
@@ -78,7 +78,7 @@ class ManufacturingServiceProvider extends ServiceProvider
     {
         $viewPath = resource_path('views/modules/manufacturing');
 
-        $sourcePath = __DIR__.'/../Resources/views';
+        $sourcePath = __DIR__ . '/../Resources/views';
 
         $this->publishes([
             $sourcePath => $viewPath
@@ -101,7 +101,7 @@ class ManufacturingServiceProvider extends ServiceProvider
         if (is_dir($langPath)) {
             $this->loadTranslationsFrom($langPath, 'manufacturing');
         } else {
-            $this->loadTranslationsFrom(__DIR__ .'/../Resources/lang', 'manufacturing');
+            $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', 'manufacturing');
         }
     }
 
@@ -112,7 +112,7 @@ class ManufacturingServiceProvider extends ServiceProvider
      */
     public function registerFactories()
     {
-        if (! app()->environment('production')) {
+        if (!app()->environment('production')) {
             app(Factory::class)->load(__DIR__ . '/../Database/factories');
         }
     }

@@ -41,7 +41,7 @@ class ContactLoginController extends Controller
     public function index(Request $request)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module')) || !auth()->user()->can('crm.access_contact_login')) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module')) || !auth()->user()->can('crm.access_contact_login')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -111,7 +111,7 @@ class ContactLoginController extends Controller
     public function create()
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module')) || !auth()->user()->can('crm.access_contact_login')) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module')) || !auth()->user()->can('crm.access_contact_login')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -137,7 +137,7 @@ class ContactLoginController extends Controller
     public function store(Request $request)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module')) || !auth()->user()->can('crm.access_contact_login')) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module')) || !auth()->user()->can('crm.access_contact_login')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -187,7 +187,7 @@ class ContactLoginController extends Controller
     public function edit($id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module')) || !auth()->user()->can('crm.access_contact_login')) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module')) || !auth()->user()->can('crm.access_contact_login')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -219,7 +219,7 @@ class ContactLoginController extends Controller
     public function update(Request $request, $id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module')) || !auth()->user()->can('crm.access_contact_login')) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module')) || !auth()->user()->can('crm.access_contact_login')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -263,7 +263,7 @@ class ContactLoginController extends Controller
     public function destroy($id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module')) || !auth()->user()->can('crm.access_contact_login')) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module')) || !auth()->user()->can('crm.access_contact_login')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -296,7 +296,7 @@ class ContactLoginController extends Controller
     public function allContactsLoginList()
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module')) || !auth()->user()->can('crm.access_contact_login')) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module')) || !auth()->user()->can('crm.access_contact_login')) {
             abort(403, 'Unauthorized action.');
         }
 

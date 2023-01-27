@@ -114,7 +114,7 @@ class ProductCatalogueController extends Controller
     public function generateQr()
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'productcatalogue_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'productcatalogue_module'))) {
             abort(403, 'Unauthorized action.');
         }
 

@@ -33,16 +33,16 @@ class AccountingServiceProvider extends ServiceProvider
 
         //TODO:Remove sidebar
         view::composer(['accounting::layouts.partials.sidebar'], function ($view) {
-                if (auth()->user()->can('superadmin')) {
-                    $__is_accounting_enabled = true;
-                } else {
-                    $business_id = session()->get('user.business_id');
-                    $module_util = new ModuleUtil();
-                    $__is_accounting_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'accounting_module');
-                }
+            if (auth()->user()->can('superadmin')) {
+                $__is_accounting_enabled = true;
+            } else {
+                $business_id = session()->get('user.business_id');
+                $module_util = new ModuleUtil();
+                $__is_accounting_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'accounting_module');
+            }
 
-                $view->with(compact('__is_accounting_enabled'));
-            });
+            $view->with(compact('__is_accounting_enabled'));
+        });
     }
 
     /**
@@ -63,10 +63,10 @@ class AccountingServiceProvider extends ServiceProvider
     protected function registerConfig()
     {
         $this->publishes([
-            __DIR__.'/../Config/config.php' => config_path('accounting.php'),
+            __DIR__ . '/../Config/config.php' => config_path('accounting.php'),
         ], 'config');
         $this->mergeConfigFrom(
-            __DIR__.'/../Config/config.php',
+            __DIR__ . '/../Config/config.php',
             'accounting'
         );
     }
@@ -80,7 +80,7 @@ class AccountingServiceProvider extends ServiceProvider
     {
         $viewPath = resource_path('views/modules/accounting');
 
-        $sourcePath = __DIR__.'/../Resources/views';
+        $sourcePath = __DIR__ . '/../Resources/views';
 
         $this->publishes([
             $sourcePath => $viewPath
@@ -103,7 +103,7 @@ class AccountingServiceProvider extends ServiceProvider
         if (is_dir($langPath)) {
             $this->loadTranslationsFrom($langPath, 'accounting');
         } else {
-            $this->loadTranslationsFrom(__DIR__ .'/../Resources/lang', 'accounting');
+            $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', 'accounting');
         }
     }
 
@@ -114,7 +114,7 @@ class AccountingServiceProvider extends ServiceProvider
      */
     public function registerFactories()
     {
-        if (! app()->environment('production')) {
+        if (!app()->environment('production')) {
             app(Factory::class)->load(__DIR__ . '/../Database/factories');
         }
     }

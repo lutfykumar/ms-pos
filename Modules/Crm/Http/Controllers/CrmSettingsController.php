@@ -39,7 +39,7 @@ class CrmSettingsController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'crmr_module')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crmr_module')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -57,7 +57,7 @@ class CrmSettingsController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module')))) {
             abort(403, 'Unauthorized action.');
         }
 

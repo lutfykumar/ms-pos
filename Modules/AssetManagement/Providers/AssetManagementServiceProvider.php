@@ -30,18 +30,19 @@ class AssetManagementServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
 
         //TODO:Remove sidebar
-        view::composer(['assetmanagement::layouts.nav'
-            ], function ($view) {
-                if (auth()->user()->can('superadmin')) {
-                    $__is_asset_enabled = true;
-                } else {
-                    $business_id = session()->get('user.business_id');
-                    $module_util = new ModuleUtil();
-                    $__is_asset_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'assetmanagement_module');
-                }
+        view::composer([
+            'assetmanagement::layouts.nav'
+        ], function ($view) {
+            if (auth()->user()->can('superadmin')) {
+                $__is_asset_enabled = true;
+            } else {
+                $business_id = session()->get('user.business_id');
+                $module_util = new ModuleUtil();
+                $__is_asset_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'assetmanagement_module');
+            }
 
-                $view->with(compact('__is_asset_enabled'));
-            });
+            $view->with(compact('__is_asset_enabled'));
+        });
     }
 
     /**
@@ -62,10 +63,10 @@ class AssetManagementServiceProvider extends ServiceProvider
     protected function registerConfig()
     {
         $this->publishes([
-            __DIR__.'/../Config/config.php' => config_path('assetmanagement.php'),
+            __DIR__ . '/../Config/config.php' => config_path('assetmanagement.php'),
         ], 'config');
         $this->mergeConfigFrom(
-            __DIR__.'/../Config/config.php',
+            __DIR__ . '/../Config/config.php',
             'assetmanagement'
         );
     }
@@ -79,7 +80,7 @@ class AssetManagementServiceProvider extends ServiceProvider
     {
         $viewPath = resource_path('views/modules/assetmanagement');
 
-        $sourcePath = __DIR__.'/../Resources/views';
+        $sourcePath = __DIR__ . '/../Resources/views';
 
         $this->publishes([
             $sourcePath => $viewPath
@@ -102,7 +103,7 @@ class AssetManagementServiceProvider extends ServiceProvider
         if (is_dir($langPath)) {
             $this->loadTranslationsFrom($langPath, 'assetmanagement');
         } else {
-            $this->loadTranslationsFrom(__DIR__ .'/../Resources/lang', 'assetmanagement');
+            $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', 'assetmanagement');
         }
     }
 
@@ -113,7 +114,7 @@ class AssetManagementServiceProvider extends ServiceProvider
      */
     public function registerFactories()
     {
-        if (! app()->environment('production')) {
+        if (!app()->environment('production')) {
             app(Factory::class)->load(__DIR__ . '/../Database/factories');
         }
     }

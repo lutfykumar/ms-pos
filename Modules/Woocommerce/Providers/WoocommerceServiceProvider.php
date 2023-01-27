@@ -42,7 +42,7 @@ class WoocommerceServiceProvider extends ServiceProvider
                 $__is_woo_enabled = $module_util->isModuleInstalled('Woocommerce');
             } else {
                 $business_id = session()->get('user.business_id');
-                $__is_woo_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'woocommerce_module', 'superadmin_package');
+                $__is_woo_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'woocommerce_module', 'superadmin_package');
             }
 
             $view->with(compact('__is_woo_enabled'));

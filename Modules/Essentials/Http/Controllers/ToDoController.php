@@ -64,7 +64,7 @@ class ToDoController extends Controller
     public function index(Request $request)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
         $is_admin = $this->moduleUtil->is_admin(auth()->user(), $business_id);
@@ -188,7 +188,7 @@ class ToDoController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
         $users = [];
@@ -212,7 +212,7 @@ class ToDoController extends Controller
     public function show($id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -268,7 +268,7 @@ class ToDoController extends Controller
     public function edit($id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -307,7 +307,7 @@ class ToDoController extends Controller
     {
         $business_id = $request->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -381,7 +381,7 @@ class ToDoController extends Controller
     public function update(Request $request, $id)
     {
         $business_id = $request->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -456,7 +456,7 @@ class ToDoController extends Controller
     public function destroy($id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -496,7 +496,7 @@ class ToDoController extends Controller
     public function addComment(Request $request)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -560,7 +560,7 @@ class ToDoController extends Controller
     public function uploadDocument(Request $request)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -622,7 +622,7 @@ class ToDoController extends Controller
     public function deleteComment($id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -654,7 +654,7 @@ class ToDoController extends Controller
     public function deleteDocument($id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
 

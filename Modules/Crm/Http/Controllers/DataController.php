@@ -62,7 +62,7 @@ class DataController extends Controller
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
 
-        // $is_crm_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'crm_module');
+        // $is_crm_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'crm_module');
         $is_business_module_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'crm_module');
 
         $commonUtil = new Util();
@@ -121,7 +121,7 @@ class DataController extends Controller
     {
         $module_util = new ModuleUtil();
         $business_id = request()->session()->get('user.business_id');
-        $is_crm_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'crm_module');
+        $is_crm_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'crm_module');
 
         if ($is_crm_enabled) {
             //for multiple tab just add another array of tab details and if js is in common file just include once in any array
@@ -151,7 +151,7 @@ class DataController extends Controller
             'source' => [],
             'life_stage' => []
         ];
-        if (!(auth()->user()->can('superadmin') || $module_util->hasThePermissionInSubscription($business_id, 'crm_module'))) {
+        if (!(auth()->user()->can('superadmin') || $module_util->hasThePermissionModuleBusiness($business_id, 'crm_module'))) {
             return $output;
         }
 

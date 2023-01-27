@@ -51,7 +51,7 @@ class ProductionController extends Controller
     public function index()
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'manufacturing_module')) || !auth()->user()->can('manufacturing.access_production')) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'manufacturing_module')) || !auth()->user()->can('manufacturing.access_production')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -61,7 +61,7 @@ class ProductionController extends Controller
                 'transactions.location_id',
                 '=',
                 'bl.id'
-                )->join('purchase_lines as pl', 'pl.transaction_id', '=', 'transactions.id')
+            )->join('purchase_lines as pl', 'pl.transaction_id', '=', 'transactions.id')
                 ->leftJoin('units as su', 'pl.sub_unit_id', '=', 'su.id')
                 ->join('variations as v', 'v.id', '=', 'pl.variation_id')
                 ->join('product_variations as pv', 'pv.id', '=', 'v.product_variation_id')
@@ -104,7 +104,7 @@ class ProductionController extends Controller
                 ->editColumn(
                     'quantity',
                     function ($row) {
-                        $qty = empty($row->base_unit_multiplier) ? $row->quantity : $row->quantity / $row->base_unit_multiplier ;
+                        $qty = empty($row->base_unit_multiplier) ? $row->quantity : $row->quantity / $row->base_unit_multiplier;
                         $unit = empty($row->sub_unit_name) ? $row->unit_name : $row->sub_unit_name;
                         return "<span class='display_currency' data-currency_symbol='false' data-orig-value='$qty'>$qty</span> $unit";
                     }
@@ -127,7 +127,7 @@ class ProductionController extends Controller
     public function create()
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'manufacturing_module')) || !auth()->user()->can('manufacturing.access_production')) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'manufacturing_module')) || !auth()->user()->can('manufacturing.access_production')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -136,7 +136,7 @@ class ProductionController extends Controller
         $recipe_dropdown = MfgRecipe::forDropdown($business_id);
 
         return view('manufacturing::production.create')
-                ->with(compact('business_locations', 'recipe_dropdown'));
+            ->with(compact('business_locations', 'recipe_dropdown'));
     }
 
     /**
@@ -147,7 +147,7 @@ class ProductionController extends Controller
     public function store(Request $request)
     {
         $business_id = $request->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'manufacturing_module')) || !auth()->user()->can('manufacturing.access_production')) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'manufacturing_module')) || !auth()->user()->can('manufacturing.access_production')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -162,7 +162,7 @@ class ProductionController extends Controller
             $manufacturing_settings = $this->mfgUtil->getSettings($business_id);
             $user_id = $request->session()->get('user.id');
 
-            $transaction_data = $request->only([ 'ref_no', 'transaction_date', 'location_id', 'final_total']);
+            $transaction_data = $request->only(['ref_no', 'transaction_date', 'location_id', 'final_total']);
 
             $is_final = !empty($request->input('finalize')) ? 1 : 0;
             $transaction_data['business_id'] = $business_id;
@@ -182,8 +182,8 @@ class ProductionController extends Controller
             }
             $variation_id = $request->input('variation_id');
             $variation = Variation::where('id', $variation_id)
-                                ->with(['product'])
-                                ->first();
+                ->with(['product'])
+                ->first();
             $final_total = $request->input('final_total');
             $quantity = $request->input('quantity');
             $waste_units = $this->productUtil->num_uf($request->input('mfg_wasted_units'));
@@ -267,25 +267,25 @@ class ProductionController extends Controller
                 $variation = $variation_details['variation'];
 
                 $line_sub_unit_id = !empty($ingredient_quantities[$variation_details['id']]['sub_unit_id']) ?
-                                $ingredient_quantities[$variation_details['id']]['sub_unit_id'] : null;
+                    $ingredient_quantities[$variation_details['id']]['sub_unit_id'] : null;
                 $line_multiplier = !empty($line_sub_unit_id) ? $variation_details['sub_units'][$line_sub_unit_id]['multiplier'] : 1;
 
                 $mfg_waste_percent = !empty($ingredient_quantities[$variation_details['id']]['mfg_waste_percent']) ? $this->productUtil->num_uf($ingredient_quantities[$variation_details['id']]['mfg_waste_percent']) : 0;
 
                 $sell_lines[] = [
-                        'product_id' => $variation->product_id,
-                        'variation_id' => $variation->id,
-                        'quantity' => $this->productUtil->num_uf($ingredient_quantities[$variation_details['id']]['quantity']),
-                        'item_tax' => 0,
-                        'tax_id' => null,
-                        'unit_price' => $variation->dpp_inc_tax * $line_multiplier,
-                        'unit_price_inc_tax' => $variation->dpp_inc_tax * $line_multiplier,
-                        'enable_stock' => $variation_details['enable_stock'],
-                        'product_unit_id' => $variation->product->unit_id,
-                        'sub_unit_id' => $line_sub_unit_id,
-                        'base_unit_multiplier' => $line_multiplier,
-                        'mfg_waste_percent' => $mfg_waste_percent
-                    ];
+                    'product_id' => $variation->product_id,
+                    'variation_id' => $variation->id,
+                    'quantity' => $this->productUtil->num_uf($ingredient_quantities[$variation_details['id']]['quantity']),
+                    'item_tax' => 0,
+                    'tax_id' => null,
+                    'unit_price' => $variation->dpp_inc_tax * $line_multiplier,
+                    'unit_price_inc_tax' => $variation->dpp_inc_tax * $line_multiplier,
+                    'enable_stock' => $variation_details['enable_stock'],
+                    'product_unit_id' => $variation->product->unit_id,
+                    'sub_unit_id' => $line_sub_unit_id,
+                    'base_unit_multiplier' => $line_multiplier,
+                    'mfg_waste_percent' => $mfg_waste_percent
+                ];
             }
 
             //Create Sell Transfer transaction
@@ -312,26 +312,29 @@ class ProductionController extends Controller
                 $pos_settings = empty($business_details->pos_settings) ? $this->businessUtil->defaultPosSettings() : json_decode($business_details->pos_settings, true);
 
                 //Map sell lines with purchase lines
-                $business = ['id' => $business_id,
-                            'accounting_method' => $request->session()->get('business.accounting_method'),
-                            'location_id' => $production_sell->location_id,
-                            'pos_settings' => $pos_settings
-                        ];
+                $business = [
+                    'id' => $business_id,
+                    'accounting_method' => $request->session()->get('business.accounting_method'),
+                    'location_id' => $production_sell->location_id,
+                    'pos_settings' => $pos_settings
+                ];
                 $this->transactionUtil->mapPurchaseSell($business, $production_sell->sell_lines, 'production_purchase');
             }
 
             DB::commit();
-            
-            $output = ['success' => 1,
-                            'msg' => __('lang_v1.added_success')
-                        ];
+
+            $output = [
+                'success' => 1,
+                'msg' => __('lang_v1.added_success')
+            ];
         } catch (Exception $e) {
             DB::rollBack();
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => 0,
-                            'msg' => __('messages.something_went_wrong')
-                        ];
+            \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => 0,
+                'msg' => __('messages.something_went_wrong')
+            ];
         }
 
         return redirect()->action('\Modules\Manufacturing\Http\Controllers\ProductionController@index')->with('status', $output);
@@ -344,21 +347,23 @@ class ProductionController extends Controller
     public function show($id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'manufacturing_module')) || !auth()->user()->can('manufacturing.access_production')) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'manufacturing_module')) || !auth()->user()->can('manufacturing.access_production')) {
             abort(403, 'Unauthorized action.');
         }
 
         $production_purchase = Transaction::where('business_id', $business_id)
-                                    ->where('type', 'production_purchase')
-                                    ->with(['purchase_lines', 'purchase_lines.variations', 'purchase_lines.variations.product_variation', 'purchase_lines.variations.product',
-                                        'purchase_lines.sub_unit', 'purchase_lines.variations.product.unit'])
-                                    ->findOrFail($id);
+            ->where('type', 'production_purchase')
+            ->with([
+                'purchase_lines', 'purchase_lines.variations', 'purchase_lines.variations.product_variation', 'purchase_lines.variations.product',
+                'purchase_lines.sub_unit', 'purchase_lines.variations.product.unit'
+            ])
+            ->findOrFail($id);
 
         $production_sell = Transaction::where('business_id', $business_id)
-                                    ->where('type', 'production_sell')
-                                    ->where('mfg_parent_production_purchase_id', $production_purchase->id)
-                                    ->with(['sell_lines', 'sell_lines.variations', 'sell_lines.variations.product_variation', 'sell_lines.variations.product', 'sell_lines.sub_unit'])
-                                    ->first();
+            ->where('type', 'production_sell')
+            ->where('mfg_parent_production_purchase_id', $production_purchase->id)
+            ->with(['sell_lines', 'sell_lines.variations', 'sell_lines.variations.product_variation', 'sell_lines.variations.product', 'sell_lines.sub_unit'])
+            ->first();
 
         $purchase_line = $production_purchase->purchase_lines[0];
         $base_unit_multiplier = !empty($purchase_line->sub_unit) ? $purchase_line->sub_unit->base_unit_multiplier : 1;
@@ -399,7 +404,7 @@ class ProductionController extends Controller
                 'total_price' => $line_total_price,
                 'waste_percent' =>  $waste_percent,
                 'final_quantity' => $final_quantity
-           ];
+            ];
         }
 
         $total_production_cost = 0;
@@ -410,7 +415,6 @@ class ProductionController extends Controller
             } elseif ($production_purchase->mfg_production_cost_type == 'per_unit') {
                 $total_production_cost = $production_purchase->mfg_production_cost * $quantity;
             }
-            
         }
 
         return view('manufacturing::production.show')->with(compact('production_purchase', 'production_sell', 'purchase_line', 'ingredients', 'unit_name', 'quantity', 'quantity_wasted', 'actual_quantity', 'total_production_cost'));
@@ -423,37 +427,38 @@ class ProductionController extends Controller
     public function edit($id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'manufacturing_module')) || !auth()->user()->can('manufacturing.access_production')) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'manufacturing_module')) || !auth()->user()->can('manufacturing.access_production')) {
             abort(403, 'Unauthorized action.');
         }
 
         $production_purchase = Transaction::where('business_id', $business_id)
-                                    ->where('type', 'production_purchase')
-                                    ->with(['purchase_lines', 'purchase_lines.variations', 'purchase_lines.variations.product_variation', 'purchase_lines.variations.product'])
-                                    ->findOrFail($id);
+            ->where('type', 'production_purchase')
+            ->with(['purchase_lines', 'purchase_lines.variations', 'purchase_lines.variations.product_variation', 'purchase_lines.variations.product'])
+            ->findOrFail($id);
 
         //Finalized production should not be editable
         if ($production_purchase->mfg_is_final == 1) {
-            $output = ['success' => 0,
-                        'msg' => __('messages.something_went_wrong')
-                    ];
+            $output = [
+                'success' => 0,
+                'msg' => __('messages.something_went_wrong')
+            ];
             return redirect()->action('\Modules\Manufacturing\Http\Controllers\ProductionController@index')->with('status', $output);
         }
 
         $production_sell = Transaction::where('business_id', $business_id)
-                                    ->where('type', 'production_sell')
-                                    ->where('mfg_parent_production_purchase_id', $production_purchase->id)
-                                    ->with(['sell_lines', 'sell_lines.variations', 'sell_lines.variations.product_variation', 'sell_lines.variations.product', 'sell_lines.variations.product.unit'])
-                                    ->first();
+            ->where('type', 'production_sell')
+            ->where('mfg_parent_production_purchase_id', $production_purchase->id)
+            ->with(['sell_lines', 'sell_lines.variations', 'sell_lines.variations.product_variation', 'sell_lines.variations.product', 'sell_lines.variations.product.unit'])
+            ->first();
         $purchase_line = $production_purchase->purchase_lines[0];
 
         $recipe = MfgRecipe::where('variation_id', $purchase_line->variation_id)
-                        ->first();
+            ->first();
 
         $base_unit_multiplier = !empty($purchase_line->sub_unit) ? $purchase_line->sub_unit->base_unit_multiplier : 1;
         $quantity = $purchase_line->quantity / $base_unit_multiplier;
         $quantity_wasted = 0;
-        
+
         if (!empty($production_purchase->mfg_wasted_units)) {
             $quantity_wasted = $production_purchase->mfg_wasted_units;
             $quantity += $quantity_wasted;
@@ -515,7 +520,7 @@ class ProductionController extends Controller
                 'waste_percent' =>  $waste_percent,
                 'final_quantity' => $final_quantity,
                 'id' => $sell_line->id
-           ];
+            ];
         }
 
         $total_production_cost = 0;
@@ -528,8 +533,8 @@ class ProductionController extends Controller
         $variation_name = $purchase_line->variations->product->name;
         if ($purchase_line->variations->product->type == 'variable') {
             $variation_name .= ' - ' .
-            $purchase_line->variations->product_variation->name .
-            ' - ' . $purchase_line->variations->name;
+                $purchase_line->variations->product_variation->name .
+                ' - ' . $purchase_line->variations->name;
         }
         $variation_name .= ' (' . $purchase_line->variations->sub_sku . ')';
         $recipe_dropdown = [$purchase_line->variation_id => $variation_name];
@@ -550,7 +555,7 @@ class ProductionController extends Controller
     public function update(Request $request, $id)
     {
         $business_id = $request->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'manufacturing_module')) || !auth()->user()->can('manufacturing.access_production')) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'manufacturing_module')) || !auth()->user()->can('manufacturing.access_production')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -562,7 +567,7 @@ class ProductionController extends Controller
             ]);
 
             //Create Production purchase
-            $transaction_data = $request->only([ 'ref_no', 'transaction_date', 'location_id', 'final_total']);
+            $transaction_data = $request->only(['ref_no', 'transaction_date', 'location_id', 'final_total']);
 
             $is_final = !empty($request->input('finalize')) ? 1 : 0;
 
@@ -575,8 +580,8 @@ class ProductionController extends Controller
 
             $variation_id = $request->input('variation_id');
             $variation = Variation::where('id', $variation_id)
-                                ->with(['product'])
-                                ->first();
+                ->with(['product'])
+                ->first();
             $final_total = $request->input('final_total');
             $quantity = $request->input('quantity');
             $waste_units = $this->productUtil->num_uf($request->input('mfg_wasted_units'));
@@ -624,14 +629,15 @@ class ProductionController extends Controller
             }
 
             $transaction = Transaction::where('business_id', $business_id)
-                                    ->where('type', 'production_purchase')
-                                    ->findOrFail($id);
+                ->where('type', 'production_purchase')
+                ->findOrFail($id);
 
             //Finalized production should not be editable
             if ($transaction->mfg_is_final == 1) {
-                $output = ['success' => 0,
-                            'msg' => __('messages.something_went_wrong')
-                        ];
+                $output = [
+                    'success' => 0,
+                    'msg' => __('messages.something_went_wrong')
+                ];
                 return redirect()->action('\Modules\Manufacturing\Http\Controllers\ProductionController@index')->with('status', $output);
             }
             DB::beginTransaction();
@@ -656,10 +662,10 @@ class ProductionController extends Controller
 
             //Create Sell Transfer transaction
             $production_sell = Transaction::where('business_id', $business_id)
-                                    ->where('type', 'production_sell')
-                                    ->with('sell_lines', 'sell_lines.product', 'sell_lines.variations')
-                                    ->where('mfg_parent_production_purchase_id', $transaction->id)
-                                    ->first();
+                ->where('type', 'production_sell')
+                ->with('sell_lines', 'sell_lines.product', 'sell_lines.variations')
+                ->where('mfg_parent_production_purchase_id', $transaction->id)
+                ->first();
 
             $production_sell->update($transaction_sell_data);
 
@@ -670,7 +676,7 @@ class ProductionController extends Controller
                 $variation = $sell_line->variations;
 
                 $line_sub_unit_id = !empty($ingredient_quantities[$sell_line->id]['sub_unit_id']) ?
-                                $ingredient_quantities[$sell_line->id]['sub_unit_id'] : null;
+                    $ingredient_quantities[$sell_line->id]['sub_unit_id'] : null;
                 $line_multiplier = 1;
                 if (!empty($line_sub_unit_id)) {
                     $sub_units = $this->productUtil->getSubUnits($business_id, $sell_line->product->unit_id);
@@ -713,25 +719,28 @@ class ProductionController extends Controller
                 }
 
                 //Map sell lines with purchase lines
-                $business = ['id' => $business_id,
-                            'accounting_method' => $request->session()->get('business.accounting_method'),
-                            'location_id' => $production_sell->location_id
-                        ];
+                $business = [
+                    'id' => $business_id,
+                    'accounting_method' => $request->session()->get('business.accounting_method'),
+                    'location_id' => $production_sell->location_id
+                ];
                 $this->transactionUtil->mapPurchaseSell($business, $production_sell->sell_lines, 'production_purchase');
             }
-            
+
             DB::commit();
-            
-            $output = ['success' => 1,
-                            'msg' => __('lang_v1.updated_success')
-                        ];
+
+            $output = [
+                'success' => 1,
+                'msg' => __('lang_v1.updated_success')
+            ];
         } catch (Exception $e) {
             DB::rollBack();
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => 0,
-                            'msg' => __('messages.something_went_wrong')
-                        ];
+            \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => 0,
+                'msg' => __('messages.something_went_wrong')
+            ];
         }
 
         return redirect()->action('\Modules\Manufacturing\Http\Controllers\ProductionController@index')->with('status', $output);
@@ -746,23 +755,23 @@ class ProductionController extends Controller
     public function destroy($id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'manufacturing_module')) || !auth()->user()->can('manufacturing.access_production')) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'manufacturing_module')) || !auth()->user()->can('manufacturing.access_production')) {
             abort(403, 'Unauthorized action.');
         }
 
         if (request()->ajax()) {
             try {
                 $transaction = Transaction::where('id', $id)
-                            ->where('business_id', $business_id)
-                            ->where('type', 'production_purchase')
-                            ->where('mfg_is_final', 0)
-                            ->delete();
+                    ->where('business_id', $business_id)
+                    ->where('type', 'production_purchase')
+                    ->where('mfg_is_final', 0)
+                    ->delete();
                 $output = [
                     'success' => true,
                     'msg' => __('lang_v1.deleted_success')
                 ];
             } catch (\Exception $e) {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
                 $output['success'] = false;
                 $output['msg'] = trans("messages.something_went_wrong");
@@ -788,7 +797,7 @@ class ProductionController extends Controller
             $production_totals = $this->mfgUtil->getProductionTotals($business_id, $location_id, $start_date, $end_date);
 
             $total_sold = $this->mfgUtil->getTotalSold($business_id, $location_id, $start_date, $end_date);
-            
+
 
             $output['total_production'] = $production_totals['total_production'];
             $output['total_production_cost'] = $production_totals['total_production_cost'];

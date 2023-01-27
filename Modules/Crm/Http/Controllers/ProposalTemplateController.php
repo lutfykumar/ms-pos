@@ -38,7 +38,7 @@ class ProposalTemplateController extends Controller
     public function index()
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -263,7 +263,7 @@ class ProposalTemplateController extends Controller
     public function getView()
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -285,7 +285,7 @@ class ProposalTemplateController extends Controller
     public function send()
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -317,7 +317,7 @@ class ProposalTemplateController extends Controller
     public function deleteProposalMedia(Request $request, $id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module'))) {
             abort(403, 'Unauthorized action.');
         }
 

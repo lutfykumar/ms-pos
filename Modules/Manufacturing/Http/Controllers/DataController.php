@@ -63,7 +63,7 @@ class DataController extends Controller
     {
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
-        // $is_mfg_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'manufacturing_module', 'superadmin_package');
+        // $is_mfg_enabled = (boolean)$module_util->hasThePermissionModuleBusiness($business_id, 'manufacturing_module', 'superadmin_package');
         $is_business_module_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'manufacturing_module', 'superadmin_package');
 
         if ($is_business_module_enabled && (auth()->user()->can('manufacturing.access_recipe') || auth()->user()->can('manufacturing.access_production'))) {

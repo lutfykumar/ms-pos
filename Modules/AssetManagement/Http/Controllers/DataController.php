@@ -74,7 +74,7 @@ class DataController extends Controller
         $business_id = request()->session()->get('user.business_id');
 
         $module_util = new ModuleUtil();
-        if (!(auth()->user()->can('superadmin') || $module_util->hasThePermissionInSubscription($business_id, 'assetmanagement_module'))) {
+        if (!(auth()->user()->can('superadmin') || $module_util->hasThePermissionModuleBusiness($business_id, 'assetmanagement_module'))) {
             return ['asset' => []];
         }
 
@@ -98,7 +98,7 @@ class DataController extends Controller
     {
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
-        // $is_asset_enabled = (boolean)$module_util->hasThePermissionInSubscription($business_id, 'assetmanagement_module');
+        // $is_asset_enabled = (boolean)$module_util->hasThePermissionModuleBusiness($business_id, 'assetmanagement_module');
         $is_business_module_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'assetmanagement_module');
 
         $background_color = '';

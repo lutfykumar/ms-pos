@@ -39,7 +39,7 @@ class DocumentController extends Controller
     public function index(Request $request)
     {
         $business_id = $request->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -162,7 +162,7 @@ class DocumentController extends Controller
     public function store(Request $request)
     {
         $business_id = $request->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -227,7 +227,7 @@ class DocumentController extends Controller
     public function show($id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -265,7 +265,7 @@ class DocumentController extends Controller
     public function destroy(Request $request, $id)
     {
         $business_id = $request->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -316,7 +316,7 @@ class DocumentController extends Controller
     public function download(Request $request, $id)
     {
         $business_id = $request->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'essentials_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'essentials_module'))) {
             abort(403, 'Unauthorized action.');
         }
 

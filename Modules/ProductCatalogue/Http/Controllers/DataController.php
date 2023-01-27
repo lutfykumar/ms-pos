@@ -31,9 +31,8 @@ class DataController extends Controller
     {
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
-        // $is_productcatalogue_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'productcatalogue_module', 'superadmin_package');
+        // $is_productcatalogue_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'productcatalogue_module', 'superadmin_package');
         $is_business_module_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'productcatalogue_module', 'superadmin_package');
-
         if ($is_business_module_enabled) {
             Menu::modify('admin-sidebar-menu', function ($menu) {
                 $menu->url(

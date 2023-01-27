@@ -325,7 +325,7 @@ class DataController extends Controller
         $module_util = new ModuleUtil();
 
         $business_id = session()->get('user.business_id');
-        // $is_essentials_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'essentials_module');
+        // $is_essentials_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'essentials_module');
         $is_business_module_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'essentials_module');
 
         if ($is_business_module_enabled) {

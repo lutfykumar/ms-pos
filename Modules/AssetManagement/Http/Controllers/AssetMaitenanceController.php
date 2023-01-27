@@ -17,7 +17,7 @@ use App\User;
 
 class AssetMaitenanceController extends Controller
 {
-    
+
     /**
      * All Utils instance.
      *
@@ -48,20 +48,20 @@ class AssetMaitenanceController extends Controller
     public function index()
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!((auth()->user()->can('asset.view_all_maintenance') && auth()->user()->can('asset.view_own_maintenance')) || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'assetmanagement_module')))) {
+        if (!((auth()->user()->can('asset.view_all_maintenance') && auth()->user()->can('asset.view_own_maintenance')) || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'assetmanagement_module')))) {
             abort(403, 'Unauthorized action.');
         }
 
         if (request()->ajax()) {
             $query = AssetMaintenance::with(['asset', 'asset.warranties'])
-                        ->where('asset_maintenances.business_id', $business_id)
-                        ->leftJoin('users as u', 'u.id', '=', 'asset_maintenances.assigned_to')
-                        ->leftJoin('users as u1', 'u1.id', '=', 'asset_maintenances.created_by');
+                ->where('asset_maintenances.business_id', $business_id)
+                ->leftJoin('users as u', 'u.id', '=', 'asset_maintenances.assigned_to')
+                ->leftJoin('users as u1', 'u1.id', '=', 'asset_maintenances.created_by');
 
             if (!auth()->user()->can('asset.view_all_maintenance') && auth()->user()->can('asset.view_own_maintenance')) {
-                $query->where(function($q){
+                $query->where(function ($q) {
                     $q->where('asset_maintenances.created_by', auth()->user()->id)
-                    ->orWhere('asset_maintenances.assigned_to', auth()->user()->id);
+                        ->orWhere('asset_maintenances.assigned_to', auth()->user()->id);
                 });
             }
 
@@ -78,24 +78,24 @@ class AssetMaitenanceController extends Controller
             }
 
             $asset_maintenances = $query->select([
-                        'asset_maintenances.asset_id',
-                        'asset_maintenances.maitenance_id',
-                        'asset_maintenances.status',
-                        'asset_maintenances.priority',
-                        'asset_maintenances.id',
-                        'asset_maintenances.details',
-                        'asset_maintenances.created_at',
-                        'u.id as assigned_user_id',
-                        DB::raw("CONCAT(COALESCE(u.surname, ''), ' ', COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, '')) as assigned_to_user"),
-                        DB::raw("CONCAT(COALESCE(u1.surname, ''), ' ', COALESCE(u1.first_name, ''), ' ', COALESCE(u1.last_name, '')) as created_by_user")
-                    ]);
+                'asset_maintenances.asset_id',
+                'asset_maintenances.maitenance_id',
+                'asset_maintenances.status',
+                'asset_maintenances.priority',
+                'asset_maintenances.id',
+                'asset_maintenances.details',
+                'asset_maintenances.created_at',
+                'u.id as assigned_user_id',
+                DB::raw("CONCAT(COALESCE(u.surname, ''), ' ', COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, '')) as assigned_to_user"),
+                DB::raw("CONCAT(COALESCE(u1.surname, ''), ' ', COALESCE(u1.first_name, ''), ' ', COALESCE(u1.last_name, '')) as created_by_user")
+            ]);
 
             $now = \Carbon::now();
             return Datatables::of($asset_maintenances)
-                ->addColumn('asset_name', function($row){
+                ->addColumn('asset_name', function ($row) {
                     return $row->asset->name ?? '';
                 })
-                ->addColumn('warranty', function($row) use ($now) {
+                ->addColumn('warranty', function ($row) use ($now) {
                     $warranty = null;
 
                     $html = '';
@@ -107,7 +107,7 @@ class AssetMaitenanceController extends Controller
 
                             $html = '<span class="label bg-green">' . __('assetmanagement::lang.in_warranty') . '</span><br>';
 
-                            $html .= '<small>' . $this->commonUtil->format_date($w->start_date) . ' ~ ' . $this->commonUtil->format_date($w->end_date) . '</br>'; 
+                            $html .= '<small>' . $this->commonUtil->format_date($w->start_date) . ' ~ ' . $this->commonUtil->format_date($w->end_date) . '</br>';
                             $html .= '(' . $now->diffInDays($end_date, false) . ' ' . __('assetmanagement::lang.days_left') . ') </small>';
 
                             break;
@@ -127,47 +127,47 @@ class AssetMaitenanceController extends Controller
                 ->filterColumn('created_by_user', function ($query, $keyword) {
                     $query->whereRaw("CONCAT(COALESCE(u1.surname, ''), ' ', COALESCE(u1.first_name, ''), ' ', COALESCE(u1.last_name, '')) like ?", ["%{$keyword}%"]);
                 })
-                ->editColumn('status', function($row){
+                ->editColumn('status', function ($row) {
                     $statuses = $this->maintenanceStatuses;
                     $html = '';
 
                     if (!empty($statuses[$row->status])) {
-                       $html = '<span class="label ' . $statuses[$row->status]['class'] . '" >' . $statuses[$row->status]['label'] . '</span>';
+                        $html = '<span class="label ' . $statuses[$row->status]['class'] . '" >' . $statuses[$row->status]['label'] . '</span>';
                     }
 
                     return $html;
                 })
-                ->editColumn('priority', function($row){
+                ->editColumn('priority', function ($row) {
                     $priorities = $this->maintenancePriorities;
                     $html = '';
 
                     if (!empty($priorities[$row->priority])) {
-                       $html = '<span class="label ' . $priorities[$row->priority]['class'] . '" >' . $priorities[$row->priority]['label'] . '</span>';
+                        $html = '<span class="label ' . $priorities[$row->priority]['class'] . '" >' . $priorities[$row->priority]['label'] . '</span>';
                     }
 
                     return $html;
                 })
-                ->editColumn('created_at', function($row){
+                ->editColumn('created_at', function ($row) {
                     $datetime = $this->commonUtil->format_date($row->created_at, true);
                     $datetime .= '<br><small class="text-muted">' . \Carbon::parse($row->created_at)->diffForHumans() . '</small>';
 
                     return $datetime;
                 })
-                ->addColumn('action', function($row){
+                ->addColumn('action', function ($row) {
                     $html = '<button type="button" class="btn btn-primary btn-xs edit_maintenance" data-href="' . action('\Modules\AssetManagement\Http\Controllers\AssetMaitenanceController@edit', [$row->id]) . '"><i class="fas fa-edit"></i> ' . __('messages.edit') . '</button>';
 
                     $html .= ' <button type="button" data-href="' . action('\Modules\AssetManagement\Http\Controllers\AssetMaitenanceController@destroy', [$row->id]) . '"  id="delete_asset_maintenance" class="btn btn-danger btn-xs">
                                     <i class="fas fa-trash"></i>
-                                    '.__("messages.delete").'
+                                    ' . __("messages.delete") . '
                                 </button>';
 
                     return $html;
-
-
                 })
                 ->removeColumn('id')
-                ->rawColumns(['status', 'priority', 'action', 'created_at', 
-                    'assigned_to_user', 'warranty'])
+                ->rawColumns([
+                    'status', 'priority', 'action', 'created_at',
+                    'assigned_to_user', 'warranty'
+                ])
                 ->make(true);
         }
 
@@ -193,7 +193,7 @@ class AssetMaitenanceController extends Controller
     public function create()
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!((auth()->user()->can('asset.view_all_maintenance') && auth()->user()->can('asset.view_own_maintenance')) || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'assetmanagement_module')))) {
+        if (!((auth()->user()->can('asset.view_all_maintenance') && auth()->user()->can('asset.view_own_maintenance')) || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'assetmanagement_module')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -201,8 +201,8 @@ class AssetMaitenanceController extends Controller
             $asset_id = request()->input('asset_id');
 
             $asset = Asset::with(['warranties'])
-                        ->where('business_id', $business_id)
-                        ->findOrfail($asset_id);
+                ->where('business_id', $business_id)
+                ->findOrfail($asset_id);
 
             $statuses = [];
             foreach ($this->maintenanceStatuses as $key => $value) {
@@ -215,7 +215,7 @@ class AssetMaitenanceController extends Controller
             }
 
             return view('assetmanagement::asset_maintenance.create')
-                    ->with(compact('asset', 'statuses', 'priorities'));
+                ->with(compact('asset', 'statuses', 'priorities'));
         }
     }
 
@@ -227,7 +227,7 @@ class AssetMaitenanceController extends Controller
     public function store(Request $request)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!((auth()->user()->can('asset.view_all_maintenance') && auth()->user()->can('asset.view_own_maintenance')) || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'assetmanagement_module')))) {
+        if (!((auth()->user()->can('asset.view_all_maintenance') && auth()->user()->can('asset.view_own_maintenance')) || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'assetmanagement_module')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -258,14 +258,13 @@ class AssetMaitenanceController extends Controller
                 'success' => true,
                 'msg' => __('lang_v1.success')
             ];
-            
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
                 'success' => false,
-                'msg' => "File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage()
+                'msg' => "File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage()
             ];
         }
 
@@ -292,14 +291,14 @@ class AssetMaitenanceController extends Controller
     public function edit($id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!((auth()->user()->can('asset.view_all_maintenance') && auth()->user()->can('asset.view_own_maintenance')) || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'assetmanagement_module')))) {
+        if (!((auth()->user()->can('asset.view_all_maintenance') && auth()->user()->can('asset.view_own_maintenance')) || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'assetmanagement_module')))) {
             abort(403, 'Unauthorized action.');
         }
 
         if (request()->ajax()) {
             $maintenance = AssetMaintenance::where('business_id', $business_id)
-                        ->with(['media'])
-                        ->findOrfail($id);
+                ->with(['media'])
+                ->findOrfail($id);
 
             $statuses = [];
             foreach ($this->maintenanceStatuses as $key => $value) {
@@ -314,7 +313,7 @@ class AssetMaitenanceController extends Controller
             $users = User::forDropdown($business_id, false);
 
             return view('assetmanagement::asset_maintenance.edit')
-                    ->with(compact('maintenance', 'statuses', 'priorities', 'users'));
+                ->with(compact('maintenance', 'statuses', 'priorities', 'users'));
         }
     }
 
@@ -327,7 +326,7 @@ class AssetMaitenanceController extends Controller
     public function update(Request $request, $id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!((auth()->user()->can('asset.view_all_maintenance') && auth()->user()->can('asset.view_own_maintenance')) || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'assetmanagement_module')))) {
+        if (!((auth()->user()->can('asset.view_all_maintenance') && auth()->user()->can('asset.view_own_maintenance')) || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'assetmanagement_module')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -348,8 +347,10 @@ class AssetMaitenanceController extends Controller
             }
 
             //if assigned user changed send notification
-            if (!empty($input['assigned_to']) && 
-                $previous_assigned_to !== $input['assigned_to']) {
+            if (
+                !empty($input['assigned_to']) &&
+                $previous_assigned_to !== $input['assigned_to']
+            ) {
                 $this->assetUtil->sendAssetAssignedForMaintenanceNotification($asset_maintenance->id);
             }
 
@@ -359,10 +360,9 @@ class AssetMaitenanceController extends Controller
                 'success' => true,
                 'msg' => __('lang_v1.success')
             ];
-            
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = [
                 'success' => false,
@@ -383,14 +383,14 @@ class AssetMaitenanceController extends Controller
     public function destroy($id)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!((auth()->user()->can('asset.view_all_maintenance') && auth()->user()->can('asset.view_own_maintenance')) || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'assetmanagement_module')))) {
+        if (!((auth()->user()->can('asset.view_all_maintenance') && auth()->user()->can('asset.view_own_maintenance')) || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'assetmanagement_module')))) {
             abort(403, 'Unauthorized action.');
         }
 
         if (request()->ajax()) {
             try {
                 $asset_maintenance = AssetMaintenance::where('business_id', $business_id)
-                            ->findOrfail($id);
+                    ->findOrfail($id);
 
                 $asset_maintenance->delete();
                 $asset_maintenance->media()->delete();
@@ -400,7 +400,7 @@ class AssetMaitenanceController extends Controller
                     'msg' => __('lang_v1.success')
                 ];
             } catch (Exception $e) {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
                 $output = [
                     'success' => false,

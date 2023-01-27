@@ -12,8 +12,8 @@
 */
 
 Route::group(['namespace' => '\Modules\ProductCatalogue\Http\Controllers'], function () {
-	Route::get('/catalogue/{business_id}/{location_id}', 'ProductCatalogueController@index');
-	Route::get('/show-catalogue/{business_id}/{product_id}', 'ProductCatalogueController@show');
+    Route::get('/catalogue/{business_id}/{location_id}', 'ProductCatalogueController@index');
+    Route::get('/show-catalogue/{business_id}/{product_id}', 'ProductCatalogueController@show');
 });
 
 Route::group(['middleware' => ['web', 'authh', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu'], 'namespace' => '\Modules\ProductCatalogue\Http\Controllers', 'prefix' => 'product-catalogue'], function () {

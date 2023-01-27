@@ -42,7 +42,7 @@ class EssentialsServiceProvider extends ServiceProvider
                 $__is_essentials_enabled = $module_util->isModuleInstalled('Essentials');
             } else {
                 $business_id = session()->get('user.business_id');
-                $__is_essentials_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'essentials_module');
+                $__is_essentials_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'essentials_module');
             }
 
             $view->with(compact('__is_essentials_enabled'));

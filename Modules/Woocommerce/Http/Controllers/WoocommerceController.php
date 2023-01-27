@@ -57,7 +57,7 @@ class WoocommerceController extends Controller
         try {
             $business_id = request()->session()->get('business.id');
 
-            if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'woocommerce_module'))) {
+            if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'woocommerce_module'))) {
                 abort(403, 'Unauthorized action.');
             }
 
@@ -144,7 +144,7 @@ class WoocommerceController extends Controller
     {
         $business_id = request()->session()->get('business.id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'woocommerce_module') && auth()->user()->can('woocommerce.access_woocommerce_api_settings')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'woocommerce_module') && auth()->user()->can('woocommerce.access_woocommerce_api_settings')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -200,7 +200,7 @@ class WoocommerceController extends Controller
     {
         $business_id = request()->session()->get('business.id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'woocommerce_module') && auth()->user()->can('woocommerce.access_woocommerce_api_settings')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'woocommerce_module') && auth()->user()->can('woocommerce.access_woocommerce_api_settings')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -249,7 +249,7 @@ class WoocommerceController extends Controller
     {
         $business_id = request()->session()->get('business.id');
 
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'woocommerce_module') && auth()->user()->can('woocommerce.syc_categories')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'woocommerce_module') && auth()->user()->can('woocommerce.syc_categories')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -303,7 +303,7 @@ class WoocommerceController extends Controller
         }
 
         $business_id = request()->session()->get('business.id');
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'woocommerce_module') && auth()->user()->can('woocommerce.sync_products')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'woocommerce_module') && auth()->user()->can('woocommerce.sync_products')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -361,7 +361,7 @@ class WoocommerceController extends Controller
         }
 
         $business_id = request()->session()->get('business.id');
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'woocommerce_module') && auth()->user()->can('woocommerce.sync_orders')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'woocommerce_module') && auth()->user()->can('woocommerce.sync_orders')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -410,7 +410,7 @@ class WoocommerceController extends Controller
         }
 
         $business_id = request()->session()->get('business.id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'woocommerce_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'woocommerce_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -438,7 +438,7 @@ class WoocommerceController extends Controller
         }
 
         $business_id = request()->session()->get('business.id');
-        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionInSubscription($business_id, 'woocommerce_module') && auth()->user()->can('woocommerce.map_tax_rates')))) {
+        if (!(auth()->user()->can('superadmin') || ($this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'woocommerce_module') && auth()->user()->can('woocommerce.map_tax_rates')))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -476,7 +476,7 @@ class WoocommerceController extends Controller
     public function viewSyncLog()
     {
         $business_id = request()->session()->get('business.id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'woocommerce_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'woocommerce_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -565,7 +565,7 @@ class WoocommerceController extends Controller
     public function getLogDetails($id)
     {
         $business_id = request()->session()->get('business.id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'woocommerce_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'woocommerce_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -586,7 +586,7 @@ class WoocommerceController extends Controller
     public function resetCategories()
     {
         $business_id = request()->session()->get('business.id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'woocommerce_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'woocommerce_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -621,7 +621,7 @@ class WoocommerceController extends Controller
     public function resetProducts()
     {
         $business_id = request()->session()->get('business.id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'woocommerce_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'woocommerce_module'))) {
             abort(403, 'Unauthorized action.');
         }
 

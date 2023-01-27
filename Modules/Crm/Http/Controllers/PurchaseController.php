@@ -46,7 +46,7 @@ class PurchaseController extends Controller
             ->find(auth()->user()->crm_contact_id)
             ->type;
 
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module') && in_array($contact_type, ['supplier', 'both']))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module') && in_array($contact_type, ['supplier', 'both']))) {
             abort(403, 'Unauthorized action.');
         }
 

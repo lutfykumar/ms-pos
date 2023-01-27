@@ -160,7 +160,7 @@ class DataController extends Controller
     {
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
-        $is_repair_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'repair_module');
+        $is_repair_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'repair_module');
 
         $background_color = '';
         if (config('app.env') == 'demo') {
@@ -188,7 +188,7 @@ class DataController extends Controller
     {
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
-        $is_repair_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'repair_module');
+        $is_repair_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'repair_module');
 
         if ($is_repair_enabled && (!is_null($params['sub_type']) && $params['sub_type'] == 'repair')) {
             $repairUtil = new RepairUtil();
@@ -250,7 +250,7 @@ class DataController extends Controller
         $module_util = new ModuleUtil();
         $business_id = request()->session()->get('user.business_id');
 
-        if (!(auth()->user()->can('superadmin') || $module_util->hasThePermissionInSubscription($business_id, 'repair_module'))) {
+        if (!(auth()->user()->can('superadmin') || $module_util->hasThePermissionModuleBusiness($business_id, 'repair_module'))) {
             return [
                 'device' => [],
             ];
@@ -276,7 +276,7 @@ class DataController extends Controller
     {
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
-        $is_repair_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'repair_module');
+        $is_repair_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'repair_module');
 
         if ($is_repair_enabled) {
             $device_models = DeviceModel::forDropdown($business_id);
@@ -322,7 +322,7 @@ class DataController extends Controller
     {
         $business_id = session()->get('user.business_id');
         $module_util = new ModuleUtil();
-        // $is_repair_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'repair_module');
+        // $is_repair_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'repair_module');
         $is_business_module_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'repair_module');
 
         if ($is_business_module_enabled) {

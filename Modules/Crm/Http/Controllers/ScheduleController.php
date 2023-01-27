@@ -60,7 +60,7 @@ class ScheduleController extends Controller
         $can_access_all_schedule = auth()->user()->can('crm.access_all_schedule');
         $can_access_own_schedule = auth()->user()->can('crm.access_own_schedule');
 
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module')) || !($can_access_all_schedule || $can_access_own_schedule)) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module')) || !($can_access_all_schedule || $can_access_own_schedule)) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -274,7 +274,7 @@ class ScheduleController extends Controller
     public function create()
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -310,7 +310,7 @@ class ScheduleController extends Controller
     public function store(Request $request)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -367,7 +367,7 @@ class ScheduleController extends Controller
         $can_access_all_schedule = auth()->user()->can('crm.access_all_schedule');
         $can_access_own_schedule = auth()->user()->can('crm.access_own_schedule');
 
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module')) || !($can_access_all_schedule || $can_access_own_schedule)) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module')) || !($can_access_all_schedule || $can_access_own_schedule)) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -399,7 +399,7 @@ class ScheduleController extends Controller
         $can_access_all_schedule = auth()->user()->can('crm.access_all_schedule');
         $can_access_own_schedule = auth()->user()->can('crm.access_own_schedule');
 
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module')) || !($can_access_all_schedule || $can_access_own_schedule)) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module')) || !($can_access_all_schedule || $can_access_own_schedule)) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -449,7 +449,7 @@ class ScheduleController extends Controller
         $can_access_all_schedule = auth()->user()->can('crm.access_all_schedule');
         $can_access_own_schedule = auth()->user()->can('crm.access_own_schedule');
 
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module')) || !($can_access_all_schedule || $can_access_own_schedule)) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module')) || !($can_access_all_schedule || $can_access_own_schedule)) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -492,7 +492,7 @@ class ScheduleController extends Controller
         $can_access_all_schedule = auth()->user()->can('crm.access_all_schedule');
         $can_access_own_schedule = auth()->user()->can('crm.access_own_schedule');
 
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module')) || !($can_access_all_schedule || $can_access_own_schedule)) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module')) || !($can_access_all_schedule || $can_access_own_schedule)) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -538,7 +538,7 @@ class ScheduleController extends Controller
     public function getTodaysSchedule()
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -571,7 +571,7 @@ class ScheduleController extends Controller
     public function getLeadSchedule(Request $request)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'crm_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'crm_module'))) {
             abort(403, 'Unauthorized action.');
         }
 

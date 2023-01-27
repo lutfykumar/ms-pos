@@ -33,7 +33,7 @@ class DataController extends Controller
             $is_connector_enabled = $module_util->isModuleInstalled('Connector');
         } else {
             $business_id = session()->get('user.business_id');
-            $is_connector_enabled = (bool)$module_util->hasThePermissionInSubscription($business_id, 'connector_module', 'superadmin_package');
+            $is_connector_enabled = (bool)$module_util->hasThePermissionModuleBusiness($business_id, 'connector_module', 'superadmin_package');
         }
         if ($is_connector_enabled) {
             Menu::modify('admin-sidebar-menu', function ($menu) {

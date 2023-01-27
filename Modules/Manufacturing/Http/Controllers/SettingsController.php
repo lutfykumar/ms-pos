@@ -38,7 +38,7 @@ class SettingsController extends Controller
     public function index()
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'manufacturing_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'manufacturing_module'))) {
             abort(403, 'Unauthorized action.');
         }
         $manufacturing_settings = $this->mfgUtil->getSettings($business_id);
@@ -55,7 +55,7 @@ class SettingsController extends Controller
     public function store(Request $request)
     {
         $business_id = request()->session()->get('user.business_id');
-        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionInSubscription($business_id, 'manufacturing_module'))) {
+        if (!(auth()->user()->can('superadmin') || $this->moduleUtil->hasThePermissionModuleBusiness($business_id, 'manufacturing_module'))) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -65,19 +65,21 @@ class SettingsController extends Controller
             $settings['disable_editing_ingredient_qty'] = !empty($request->input('disable_editing_ingredient_qty')) ? true : false;
 
             $settings['enable_updating_product_price'] = !empty($request->input('enable_updating_product_price')) ? true : false;
-            
-            $business = Business::where('id', $business_id)
-                                ->update(['manufacturing_settings' => json_encode($settings)]);
 
-            $output = ['success' => 1,
-                            'msg' => __("lang_v1.updated_success")
-                        ];
+            $business = Business::where('id', $business_id)
+                ->update(['manufacturing_settings' => json_encode($settings)]);
+
+            $output = [
+                'success' => 1,
+                'msg' => __("lang_v1.updated_success")
+            ];
         } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => 0,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
+            \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = [
+                'success' => 0,
+                'msg' => __("messages.something_went_wrong")
+            ];
         }
 
         return redirect()->back()->with('status', $output);
